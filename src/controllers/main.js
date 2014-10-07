@@ -8,7 +8,7 @@ angular.module('opendap-viewer')
   })
   .controller('MainController', class MainController {
     constructor(jqdap) {
-      this.showControl = true;
+      this.showControl = false;
     }
 
     toggleShowControl() {

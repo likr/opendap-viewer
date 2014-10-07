@@ -1,16 +1,26 @@
 <div data-drag="true" jqyoui-draggable style="top:0; left:0;">
   <div id="control">
-    <div class="container-fluid">
+    <div class="container-fluid" style="padding-top: 15px; padding-bottom: 15px;">
       <form>
         <div class="form-group">
           <label>Lat from</label>
           <input class="form-control" type="number" min="-90" max="90" ng-model="ctl.latFrom"/>
+        </div>
+        <div class="form-group">
           <label>Lat to</label>
           <input class="form-control" type="number" min="-90" max="90" ng-model="ctl.latTo"/>
+        </div>
+        <div class="form-group">
           <label>Lon from</label>
           <input class="form-control" type="number" min="0" max="360" ng-model="ctl.lonFrom"/>
+        </div>
+        <div class="form-group">
           <label>Lon to</label>
           <input class="form-control" type="number" min="0" max="360" ng-model="ctl.lonTo"/>
+        </div>
+        <div class="form-group">
+          <label>URL</label>
+          <input class="form-control" ng-model="ctl.url"/>
         </div>
         <button class="btn btn-default btn-block" ng-click="ctl.loadData()">Load data</button>
       </form>

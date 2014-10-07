@@ -9,7 +9,7 @@ angular.module('opendap-viewer')
       link: (scope, element, attributes) => {
         var width = element.width();
         var height = element.height();
-        window.renderer = new THREE.WebGLRenderer();
+        var renderer = new THREE.WebGLRenderer();
         renderer.setSize(width, height);
         element[0].appendChild(renderer.domElement);
 

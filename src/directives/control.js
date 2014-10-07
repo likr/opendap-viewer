@@ -75,6 +75,7 @@ function createMesh(data) {
 angular.module('opendap-viewer')
   .controller('ControlController', class ControlController {
     constructor($scope, scene, camera) {
+      this.url = 'data/s.dods';
       this.scene = scene;
       this.camera = camera;
       this.latFrom = -90;
@@ -105,8 +106,7 @@ angular.module('opendap-viewer')
     }
 
     loadData() {
-      var url = 'data/s.dods';
-      jqdap.loadData(url)
+      jqdap.loadData(this.url)
         .then(data => {
           this.scene.add(createMesh(data));
         });
