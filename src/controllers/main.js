@@ -9,12 +9,6 @@ angular.module('opendap-viewer')
   .controller('MainController', class MainController {
     constructor(jqdap) {
       this.showControl = true;
-
-      var url = 'http://dias:akaika0530@localhost/dias/dods/secret/s';
-      jqdap.loadDataset(url)
-        .then(data => {
-          console.log(data);
-        });
     }
 
     toggleShowControl() {

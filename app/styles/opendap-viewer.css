@@ -24,3 +24,6 @@ control {
   border-radius: 8px 8px 8px 8px;
   background-color: #ddd;
 }
+screen {
+  display: block;
+}

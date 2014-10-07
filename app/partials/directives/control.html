@@ -1,14 +1,19 @@
 <div data-drag="true" jqyoui-draggable style="top:0; left:0;">
   <div id="control">
     <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-6">.col-md-6</div>
-        <div class="col-md-6">.col-md-6</div>
-      </div>
-      <div class="row">
-        <div class="col-md-6">.col-md-6</div>
-        <div class="col-md-6">.col-md-6</div>
-      </div>
+      <form>
+        <div class="form-group">
+          <label>Lat from</label>
+          <input class="form-control" type="number" min="-90" max="90" ng-model="ctl.latFrom"/>
+          <label>Lat to</label>
+          <input class="form-control" type="number" min="-90" max="90" ng-model="ctl.latTo"/>
+          <label>Lon from</label>
+          <input class="form-control" type="number" min="0" max="360" ng-model="ctl.lonFrom"/>
+          <label>Lon to</label>
+          <input class="form-control" type="number" min="0" max="360" ng-model="ctl.lonTo"/>
+        </div>
+        <button class="btn btn-default btn-block" ng-click="ctl.loadData()">Load data</button>
+      </form>
     </div>
   </div>
 </div>
