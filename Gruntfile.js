@@ -11,7 +11,7 @@ module.exports = function(grunt) {
           targetDir: 'app',
           layout: function(type) {
             var renamedType = type;
-            if (type === 'js') {
+            if (type === 'js' || type === 'map') {
               renamedType = 'scripts';
             } else if (type === 'css') {
               renamedType = 'styles';
@@ -23,7 +23,12 @@ module.exports = function(grunt) {
     },
     concat: {
       dist: {
-        src: ['build/opendap-viewer.js', 'build/controllers/*.js'],
+        src: [
+          'build/opendap-viewer.js',
+          'build/services/*.js',
+          'build/directives/*.js',
+          'build/controllers/*.js'
+        ],
         dest: 'app/scripts/opendap-viewer.js'
       }
     },

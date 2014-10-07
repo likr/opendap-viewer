@@ -4,3 +4,23 @@ body {
   overflow: hidden;
   background-color: #777;
 }
+#frame {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  bottom: 8px;
+  right: 8px;
+  border-radius: 8px 8px 8px 8px;
+  background-color: #fff;
+}
+control {
+  position: absolute;
+  top: 50px;
+  right: 50px;
+}
+#control {
+  width: 200px;
+  height: 400px;
+  border-radius: 8px 8px 8px 8px;
+  background-color: #ddd;
+}

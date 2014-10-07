@@ -9,11 +9,16 @@
     "bootstrap": "~3.2.0",
     "d3": "~3.4.10",
     "traceur": "~0.0.66",
-    "traceur-runtime": "~0.0.66"
+    "traceur-runtime": "~0.0.66",
+    "three.js": "*",
+    "jqdap": "*"
   },
   "exportsOverride": {
     "angular-ui-router": {
       "js": "release/*.js"
+    },
+    "angular-dragdrop": {
+      "js": "src/*.js"
     },
     "bootstrap": {
       "js": "dist/js/*.js",
@@ -22,9 +27,13 @@
     "jquery": {
       "js": "dist/*.js"
     },
+    "jquery-ui": {
+      "js": "jquery-ui.*"
+    },
     "*": {
       "js": "**/*.js",
-      "css": "**/*.css"
+      "css": "**/*.css",
+      "map": "**/*.map"
     }
   }
 }
