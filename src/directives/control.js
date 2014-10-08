@@ -108,7 +108,6 @@ angular.module('opendap-viewer')
     loadData() {
       jqdap.loadData(this.url)
         .then(data => {
-          console.log(data);
           this.scene.add(createMesh(data));
         });
     }
