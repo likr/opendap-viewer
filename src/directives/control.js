@@ -1,7 +1,4 @@
-var IGNORE_VALUE = -100;
-var mercator = d3.geo.mercator()
-  .rotate([0, 0, 0])
-  .translate([472, 472]);
+var IGNORE_VALUE = -999000000;
 
 function createMesh(data) {
   var xList = data[0][4];
@@ -14,7 +11,10 @@ function createMesh(data) {
   var i, cnt = 0;
   var _createTriagle = function (vList, cList) {
     for (i = 0; i < 3; i++) {
-      geo.vertices.push(new THREE.Vector3(vList[i][0], vList[i][1], -1));
+      geo.vertices.push(new THREE.Vector3(
+            vList[i][0] >= 180 ? vList[i][0] - 360 : vList[i][0],
+            vList[i][1],
+            0));
     }
     var vNum = 3 * cnt;
     geo.faces.push(new THREE.Face3(vNum, vNum + 1, vNum + 2));
@@ -80,8 +80,8 @@ angular.module('opendap-viewer')
       this.camera = camera;
       this.latFrom = -90;
       this.latTo = 90;
-      this.lonFrom = 0;
-      this.lonTo = 360;
+      this.lonFrom = -180;
+      this.lonTo = 180;
 
       $scope.$watch(() => this.latFrom, (oldValue, newValue) => {
         if (oldValue !== newValue) {
@@ -108,6 +108,7 @@ angular.module('opendap-viewer')
     loadData() {
       jqdap.loadData(this.url)
         .then(data => {
+          console.log(data);
           this.scene.add(createMesh(data));
         });
     }

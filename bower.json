@@ -11,7 +11,8 @@
     "traceur": "~0.0.66",
     "traceur-runtime": "~0.0.66",
     "three.js": "*",
-    "jqdap": "*"
+    "jqdap": "*",
+    "topojson": "~1.6.18"
   },
   "exportsOverride": {
     "angular-ui-router": {
