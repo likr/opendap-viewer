@@ -18,11 +18,27 @@ control {
   top: 90px;
   right: 15px;
 }
-#control {
+.control-container {
+  top: 0;
+  left: 0;
+  background-color: #e7e7e7;
+  padding: 3px;
+  border-radius: 8px 8px 8px 8px;
+  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.2);
+  color: #777;
+}
+.control-header {
+  cursor: move;
+  margin-left: 3px;
+  margin-bottom: 5px;
+}
+.control-header>.title{
+  font-size: 20px;
+}
+.control-contents {
   width: 200px;
   height: 500px;
-  border-radius: 8px 8px 8px 8px;
-  background-color: #ddd;
+  background-color: #f8f8f8;
 }
 screen {
   display: block;
