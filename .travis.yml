@@ -24,4 +24,4 @@ env:
     - GIT_COMMITTER_EMAIL: 'onoue@likr-lab.com'
     - GIT_AUTHOR_NAME: 'Yosuke ONOUE'
     - GIT_AUTHOR_EMAIL: 'onoue@likr-lab.com'
-    - secure: "GPR0OxeNTCI/y4/iXgDq+JNCd2C9u8lb8xGDVWCMkgYnt5AIaoDi8crtutJZ3qhydxZ9Cr7711zA/y2Kr5BXu3HQMYoQ7eujd323d5AWl9qZnfeNda7DwHhnfuhcWIXOZVK24qfq6mn910/oX6NMNBPGrWZdtIOfNjDyjNduQGw="
+    - secure: "W16msMnsck9hmWcxxXKaYy3+Wx3/w3qsfGmROM3CA7qlSTTy6UvqirdKUVl8aY6W825TGHW17hmLMG1FMSZd6IFCIYZ9rKy4kiNo3KsoaLgCOuC+R8VivFSASnFR9u1Z7G5zjf8ViuSz01U7GYe4Ypq49O0SKcHt22SyCKlNr6s="
