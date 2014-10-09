@@ -12,7 +12,9 @@
     "traceur-runtime": "~0.0.66",
     "three.js": "*",
     "jqdap": "*",
-    "topojson": "~1.6.18"
+    "topojson": "~1.6.18",
+    "jquery-ui": "~1.11.1",
+    "angular-dragdrop": "~1.0.8"
   },
   "exportsOverride": {
     "angular-ui-router": {
@@ -26,7 +28,8 @@
       "css": "dist/css/*.css"
     },
     "jquery": {
-      "js": "dist/*.js"
+      "js": "dist/*.js",
+      "map": "dist/*.map"
     },
     "jquery-ui": {
       "js": "jquery-ui.*"
