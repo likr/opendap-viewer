@@ -16,6 +16,7 @@
       </form>
       <div ng-repeat="data in ctl.dataset">
         <p>{{data.name}}</p>
+        <p ng-repeat="dimension in data.array.dimensions">{{dimension}} {{data.array.shape[$index]}}</p>
       </div>
     </div>
   </div>
