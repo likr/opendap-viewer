@@ -40,6 +40,11 @@ control {
   height: 500px;
   background-color: #f8f8f8;
 }
+dataset-control {
+  position: absolute;
+  top: 90px;
+  right: 240px;
+}
 screen {
   display: block;
 }
