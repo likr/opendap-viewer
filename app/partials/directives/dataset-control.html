@@ -10,13 +10,28 @@
       <form>
         <div class="form-group">
           <label>URL</label>
-          <input class="form-control" ng-model="ctl.url"/>
+          <input class="form-control" ng-model="datasetCtl.url"/>
         </div>
-        <button class="btn btn-default btn-block" ng-click="ctl.loadDataset()">Load data</button>
+        <button class="btn btn-default btn-block" ng-click="datasetCtl.loadDataset()">Load dataset</button>
       </form>
-      <div ng-repeat="data in ctl.dataset">
-        <p>{{data.name}}</p>
-        <p ng-repeat="dimension in data.array.dimensions">{{dimension}} {{data.array.shape[$index]}}</p>
+      <div class="dataset">
+        <table class="table table-bordered">
+          <tbody ng-repeat="data in datasetCtl.grid">
+            <tr ng-repeat="dimension in data.array.dimensions">
+              <td class="col-sm-2" ng-if="$index === 0" rowspan="{{data.array.dimensions.length}}">{{data.name}}</td>
+              <td class="col-sm-2">{{dimension}}</td>
+              <td class="col-sm-2">{{data.array.shape[$index]}}</td>
+              <td class="col-sm-3">
+                <input class="form-control" ng-model="data.query[$index]">
+              </td>
+              <td class="col-sm-3" ng-if="$index === 0" rowspan="{{data.array.dimensions.length}}">
+                <button class="btn btn-default btn-block" ng-if="data.draw.contour" ng-click="datasetCtl.draw(data)">Contour</button>
+                <button class="btn btn-default btn-block" ng-if="data.draw.isosurface" ng-click="datasetCtl.draw(data)">Isosurface</button>
+                <button class="btn btn-default btn-block" ng-if="data.draw.pbr" ng-click="datasetCtl.draw(data)">PBR</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

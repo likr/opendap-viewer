@@ -13,11 +13,6 @@ body {
   border-radius: 8px 8px 8px 8px;
   background-color: #fff;
 }
-control {
-  position: absolute;
-  top: 90px;
-  right: 15px;
-}
 .control-container {
   top: 0;
   left: 0;
@@ -27,6 +22,9 @@ control {
   box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.2);
   color: #777;
 }
+.control-contents {
+  background-color: #f8f8f8;
+}
 .control-header {
   cursor: move;
   margin-left: 3px;
@@ -35,15 +33,33 @@ control {
 .control-header>.title{
   font-size: 20px;
 }
-.control-contents {
+control {
+  position: absolute;
+  top: 90px;
+  right: 15px;
+}
+control .control-contents {
   width: 200px;
   height: 500px;
-  background-color: #f8f8f8;
 }
 dataset-control {
   position: absolute;
   top: 90px;
   right: 240px;
+}
+dataset-control .control-contents {
+  width: 500px;
+  height: 500px;
+}
+.dataset {
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: 300px;
+  margin-top: 20px;
+}
+.dataset table {
+  background-color: #fff;
+  margin-bottom: 0;
 }
 screen {
   display: block;
