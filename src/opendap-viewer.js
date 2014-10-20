@@ -13,6 +13,7 @@ angular.module('opendap-viewer')
         var group = new THREE.Object3D();
         var material = new THREE.MeshBasicMaterial({
           color: 0x00ff00,
+          side: THREE.DoubleSide,
         });
         geo.features.forEach(feature => {
           if (feature.geometry) {

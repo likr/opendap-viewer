@@ -18,9 +18,11 @@ function coordinates(data, dataset) {
 
 angular.module('opendap-viewer')
   .controller('DatasetController', class {
-    constructor($scope, $modal) {
+    constructor($scope, $modal, scene, IsosurfaceGeometry) {
       this.$scope = $scope;
       this.$modal = $modal;
+      this.scene = scene;
+      this.IsosurfaceGeometry = IsosurfaceGeometry;
       this.grid = [];
       this.url = 'http://localhost/dias/thredds/dodsC/DIAS/MOVE-RA2014';
     }
@@ -62,24 +64,45 @@ angular.module('opendap-viewer')
     }
 
     drawIsosurface(data) {
+      var url = queryUrl(data);
       this.$modal
         .open({
           controller: 'IsovalueDialogController as isovalueCtl',
           templateUrl: 'partials/dialogs/isovalue.html',
         })
         .result
-        .then(isovalue => {
+        .then(result => {
+          jqdap.loadData(url)
+            .then(data => {
+              var geometry = new this.IsosurfaceGeometry(data[0][0][0], {
+                x: data[0][4],
+                y: data[0][3],
+                z: data[0][2],
+              }, result.isovalue);
+              geometry.computeFaceNormals();
+              geometry.computeVertexNormals();
+              var material = new THREE.MeshLambertMaterial({
+                color: new THREE.Color(result.color),
+                side: THREE.DoubleSide,
+              });
+              var mesh = new THREE.Mesh(geometry, material);
+              this.scene.add(mesh);
+            });
         });
     }
   })
   .controller('IsovalueDialogController', class {
     constructor($modalInstance) {
       this.$modalInstance = $modalInstance;
-      this.isovalue = 0.5;
+      this.isovalue = 34;
+      this.color = '#ff0000';
     }
 
     ok() {
-      this.$modalInstance.close(this.isovalue);
+      this.$modalInstance.close({
+        isovalue: +this.isovalue,
+        color: this.color,
+      });
     }
 
     cancel() {

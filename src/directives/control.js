@@ -74,10 +74,11 @@ function createMesh(data) {
 
 angular.module('opendap-viewer')
   .controller('ControlController', class ControlController {
-    constructor($scope, scene, camera) {
+    constructor($scope, scene, camera, target) {
       this.url = 'data/s.dods';
       this.scene = scene;
       this.camera = camera;
+      this.target = target;
       this.latFrom = -90;
       this.latTo = 90;
       this.lonFrom = -180;
@@ -118,13 +119,11 @@ angular.module('opendap-viewer')
       var size = Math.max(width, height);
       var centerX = (this.lonTo + this.lonFrom) / 2;
       var centerY = (this.latTo + this.latFrom) / 2;
-      this.camera.left = - size / 2;
-      this.camera.right = size / 2;
-      this.camera.top = size / 2;
-      this.camera.bottom = - size / 2;
-      this.camera.position.set(centerX, centerY, 1);
+      var theta = this.camera.fov;
+      this.camera.position.set(centerX, centerY, size / Math.tan(Math.PI * theta / 360));
       this.camera.lookAt(new THREE.Vector3(centerX, centerY, 0));
       this.camera.updateProjectionMatrix();
+      this.target.set(centerX, centerY, 0);
     }
   })
   .directive('control', () => {

@@ -341,12 +341,12 @@ angular.module('opendap-viewer')
         function table_index(i, j, k) {
           var s0 = volume[k][j][i];
           var s1 = volume[k][j][i + 1];
-          var s2 = volume[k][j + 1][i];
-          var s3 = volume[k][j + 1][i + 1];
+          var s2 = volume[k][j + 1][i + 1];
+          var s3 = volume[k][j + 1][i];
           var s4 = volume[k + 1][j][i];
           var s5 = volume[k + 1][j][i + 1];
-          var s6 = volume[k + 1][j + 1][i];
-          var s7 = volume[k + 1][j + 1][i + 1];
+          var s6 = volume[k + 1][j + 1][i + 1];
+          var s7 = volume[k + 1][j + 1][i];
           var index = 0;
           if (s0 > isovalue) index |= 1;
           if (s1 > isovalue) index |= 2;
@@ -363,9 +363,12 @@ angular.module('opendap-viewer')
           var s0 = volume[v0[2]][v0[1]][v0[0]];
           var s1 = volume[v1[2]][v1[1]][v1[0]];
           var a = (s - s0) / (s1 - s0);
+          if (a < 0 || 1 < a) {
+            console.log(v0, v1, p0, p0, s0, s1, a);
+          }
           var x = mix(p0[0], p1[0], a);
           var y = mix(p0[1], p1[1], a);
-          var z = - mix(p0[2], p1[2], a);
+          var z = - mix(p0[2], p1[2], a) / 60;
           return new THREE.Vector3(x, y, z);
         }
       }
