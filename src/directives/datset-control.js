@@ -18,8 +18,9 @@ function coordinates(data, dataset) {
 
 angular.module('opendap-viewer')
   .controller('DatasetController', class {
-    constructor($scope) {
+    constructor($scope, $modal) {
       this.$scope = $scope;
+      this.$modal = $modal;
       this.grid = [];
       this.url = 'http://localhost/dias/thredds/dodsC/DIAS/MOVE-RA2014';
     }
@@ -58,6 +59,31 @@ angular.module('opendap-viewer')
         .then(data => {
           console.log(data);
         });
+    }
+
+    drawIsosurface(data) {
+      this.$modal
+        .open({
+          controller: 'IsovalueDialogController as isovalueCtl',
+          templateUrl: 'partials/dialogs/isovalue.html',
+        })
+        .result
+        .then(isovalue => {
+        });
+    }
+  })
+  .controller('IsovalueDialogController', class {
+    constructor($modalInstance) {
+      this.$modalInstance = $modalInstance;
+      this.isovalue = 0.5;
+    }
+
+    ok() {
+      this.$modalInstance.close(this.isovalue);
+    }
+
+    cancel() {
+      this.$modalInstance.dismiss('cancel');
     }
   })
   .directive('datasetControl', () => {
