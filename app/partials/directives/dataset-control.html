@@ -25,7 +25,7 @@
                 <input class="form-control" ng-model="data.query[$index]">
               </td>
               <td class="col-sm-3" ng-if="$index === 0" rowspan="{{data.array.dimensions.length}}">
-                <button class="btn btn-default btn-block" ng-if="data.draw.contour" ng-click="datasetCtl.draw(data)">Contour</button>
+                <button class="btn btn-default btn-block" ng-if="data.draw.contour" ng-click="datasetCtl.drawContour(data)">Contour</button>
                 <button class="btn btn-default btn-block" ng-if="data.draw.isosurface" ng-click="datasetCtl.drawIsosurface(data)">Isosurface</button>
                 <button class="btn btn-default btn-block" ng-if="data.draw.pbr" ng-click="datasetCtl.draw(data)">PBR</button>
               </td>

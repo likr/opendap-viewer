@@ -363,9 +363,6 @@ angular.module('opendap-viewer')
           var s0 = volume[v0[2]][v0[1]][v0[0]];
           var s1 = volume[v1[2]][v1[1]][v1[0]];
           var a = (s - s0) / (s1 - s0);
-          if (a < 0 || 1 < a) {
-            console.log(v0, v1, p0, p0, s0, s1, a);
-          }
           var x = mix(p0[0], p1[0], a);
           var y = mix(p0[1], p1[1], a);
           var z = - mix(p0[2], p1[2], a) / 60;

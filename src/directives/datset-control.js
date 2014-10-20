@@ -18,10 +18,11 @@ function coordinates(data, dataset) {
 
 angular.module('opendap-viewer')
   .controller('DatasetController', class {
-    constructor($scope, $modal, scene, IsosurfaceGeometry) {
+    constructor($scope, $modal, scene, ContourGeometry, IsosurfaceGeometry) {
       this.$scope = $scope;
       this.$modal = $modal;
       this.scene = scene;
+      this.ContourGeometry = ContourGeometry;
       this.IsosurfaceGeometry = IsosurfaceGeometry;
       this.grid = [];
       this.url = 'http://localhost/dias/thredds/dodsC/DIAS/MOVE-RA2014';
@@ -60,6 +61,23 @@ angular.module('opendap-viewer')
       jqdap.loadData(url)
         .then(data => {
           console.log(data);
+        });
+    }
+
+    drawContour(data) {
+      var url = queryUrl(data);
+      jqdap.loadData(url)
+        .then(data => {
+          var geometry = new this.ContourGeometry(data[0][0][0][0], {
+            x: data[0][4],
+            y: data[0][3]
+          }, -9.989999710577421e+33);
+          var material = new THREE.MeshBasicMaterial({
+            vertexColors: THREE.VertexColors,
+            side: THREE.DoubleSide,
+          });
+          var mesh = new THREE.Mesh(geometry, material);
+          this.scene.add(mesh);
         });
     }
 
