@@ -1,2 +1,6 @@
 angular.module('opendap-viewer')
-  .service('scene', THREE.Scene);
+  .factory('scene', (light) => {
+    var scene = new THREE.Scene();
+    scene.add(light);
+    return scene;
+  });

@@ -1,11 +1,11 @@
 {
   "name": "opendap-viewer",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "dependencies": {
     "angular": "~1.2.20",
     "angular-resource": "~1.2.20",
     "angular-ui-router": "~0.2.10",
-    "angular-ui-bootstrap-bower": "~0.11.0",
+    "angular-ui-bootstrap-bower": "~0.11.2",
     "bootstrap": "~3.2.0",
     "d3": "~3.4.10",
     "traceur": "~0.0.66",
@@ -15,7 +15,8 @@
     "topojson": "~1.6.18",
     "jquery-ui": "~1.11.1",
     "angular-dragdrop": "~1.0.8",
-    "jqueryui-touch-punch": "*"
+    "jqueryui-touch-punch": "*",
+    "threejs-controls": "*"
   },
   "exportsOverride": {
     "angular-ui-router": {
@@ -34,6 +35,9 @@
     },
     "jquery-ui": {
       "js": "jquery-ui.*"
+    },
+    "threejs-controls": {
+      "js": "controls/TrackballControls.js"
     },
     "*": {
       "js": "**/*.js",

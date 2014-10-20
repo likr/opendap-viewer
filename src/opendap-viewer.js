@@ -1,4 +1,4 @@
-angular.module('opendap-viewer', ['ui.router', 'ngDragDrop']);
+angular.module('opendap-viewer', ['ui.router', 'ui.bootstrap', 'ngDragDrop']);
 
 angular.module('opendap-viewer')
   .config($urlRouterProvider => {
@@ -13,6 +13,7 @@ angular.module('opendap-viewer')
         var group = new THREE.Object3D();
         var material = new THREE.MeshBasicMaterial({
           color: 0x00ff00,
+          side: THREE.DoubleSide,
         });
         geo.features.forEach(feature => {
           if (feature.geometry) {

@@ -21,6 +21,14 @@ module.exports = function(grunt) {
         }
       }
     },
+    bump: {
+      options: {
+        files: ['package.json', 'bower.json'],
+        commit: false,
+        createTag: false,
+        push: false
+      }
+    },
     concat: {
       dist: {
         src: [
@@ -56,6 +64,7 @@ module.exports = function(grunt) {
   });
 
   grunt.loadNpmTasks('grunt-bower-task');
+  grunt.loadNpmTasks('grunt-bump');
   grunt.loadNpmTasks('grunt-traceur');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-watch');

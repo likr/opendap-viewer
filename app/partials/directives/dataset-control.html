@@ -1,0 +1,38 @@
+<div class="control-container" data-drag="true" jqyoui-draggable>
+  <div class="control-header">
+    <span class="title">Control</span>
+    <button type="button" class="close">
+      <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+    </button>
+  </div>
+  <div class="control-contents">
+    <div class="container-fluid" style="padding-top: 15px; padding-bottom: 15px;">
+      <form>
+        <div class="form-group">
+          <label>URL</label>
+          <input class="form-control" ng-model="datasetCtl.url"/>
+        </div>
+        <button class="btn btn-default btn-block" ng-click="datasetCtl.loadDataset()">Load dataset</button>
+      </form>
+      <div class="dataset">
+        <table class="table table-bordered">
+          <tbody ng-repeat="data in datasetCtl.grid">
+            <tr ng-repeat="dimension in data.array.dimensions">
+              <td class="col-sm-2" ng-if="$index === 0" rowspan="{{data.array.dimensions.length}}">{{data.name}}</td>
+              <td class="col-sm-2">{{dimension}}</td>
+              <td class="col-sm-2">{{data.array.shape[$index]}}</td>
+              <td class="col-sm-3">
+                <input class="form-control" ng-model="data.query[$index]">
+              </td>
+              <td class="col-sm-3" ng-if="$index === 0" rowspan="{{data.array.dimensions.length}}">
+                <button class="btn btn-default btn-block" ng-if="data.draw.contour" ng-click="datasetCtl.drawContour(data)">Contour</button>
+                <button class="btn btn-default btn-block" ng-if="data.draw.isosurface" ng-click="datasetCtl.drawIsosurface(data)">Isosurface</button>
+                <button class="btn btn-default btn-block" ng-if="data.draw.pbr" ng-click="datasetCtl.draw(data)">PBR</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
