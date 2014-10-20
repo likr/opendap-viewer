@@ -4,6 +4,11 @@ function queryUrl(data) {
 }
 
 
+function axisUrl(data, index) {
+  return `${data.url}.dods?${data.array.dimensions[index]}`;
+}
+
+
 function coordinates(data, dataset) {
   var result = new Set();
   data.array.dimensions.forEach(dimension => {
@@ -40,7 +45,7 @@ angular.module('opendap-viewer')
               if (data.type === 'Grid') {
                 this.grid.push(data);
                 data.query = data.array.shape.map((shape, i) => {
-                  return `0:${shape - 1}`;
+                  return `0:1:${shape - 1}`;
                 });
                 axes = coordinates(data, dataset);
                 data.draw = {
@@ -108,6 +113,28 @@ angular.module('opendap-viewer')
             });
         });
     }
+
+    inputQuery(data, index) {
+      this.$modal
+        .open({
+          controller: 'QueryDialogController as queryCtl',
+          resolve: {
+            values: $q => {
+              var deferred = $q.defer();
+              jqdap.loadData(axisUrl(data, index))
+                .then(data => {
+                  deferred.resolve(data[0]);
+                });
+              return deferred.promise;
+            }
+          },
+          templateUrl: 'partials/dialogs/query.html',
+        })
+        .result
+        .then(result => {
+          data.query[index] = `${result.from}:${result.step}:${result.to}`;
+        });
+    }
   })
   .controller('IsovalueDialogController', class {
     constructor($modalInstance) {
@@ -120,6 +147,27 @@ angular.module('opendap-viewer')
       this.$modalInstance.close({
         isovalue: +this.isovalue,
         color: this.color,
+      });
+    }
+
+    cancel() {
+      this.$modalInstance.dismiss('cancel');
+    }
+  })
+  .controller('QueryDialogController', class {
+    constructor($modalInstance, values) {
+      this.$modalInstance = $modalInstance;
+      this.values = values;
+      this.from = values[0];
+      this.to = values[values.length - 1];
+      this.step = 1;
+    }
+
+    ok() {
+      this.$modalInstance.close({
+        from: this.values.indexOf(this.from),
+        to: this.values.indexOf(this.to),
+        step: this.step
       });
     }
 
