@@ -1,6 +1,6 @@
 {
   "name": "opendap-viewer",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "dependencies": {
     "angular": "~1.2.20",
     "angular-resource": "~1.2.20",
