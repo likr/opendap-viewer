@@ -23,11 +23,11 @@ function coordinates(data, dataset) {
 
 angular.module('opendap-viewer')
   .controller('DatasetController', class {
-    constructor($scope, $modal, scene, ContourGeometry, IsosurfaceGeometry) {
+    constructor($scope, $modal, scene, objects, ContourGeometry, IsosurfaceGeometry) {
       this.$scope = $scope;
       this.$modal = $modal;
       this.scene = scene;
-      this.objects = $scope.objects;
+      this.objects = objects;
       this.ContourGeometry = ContourGeometry;
       this.IsosurfaceGeometry = IsosurfaceGeometry;
       this.grid = [];
@@ -192,9 +192,6 @@ angular.module('opendap-viewer')
     return {
       controller: 'DatasetController as datasetCtl',
       restrict: 'E',
-      scope: {
-        objects: '='
-      },
       templateUrl: 'partials/directives/dataset-control.html',
     };
   });

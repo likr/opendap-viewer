@@ -1,8 +1,8 @@
 angular.module('opendap-viewer')
   .controller('ObjectController', class {
-    constructor($scope, scene) {
-      this.objects = $scope.objects;
+    constructor(scene, objects) {
       this.scene = scene;
+      this.objects = objects;
     }
 
     toggle(object) {
@@ -17,9 +17,6 @@ angular.module('opendap-viewer')
     return {
       controller: 'ObjectController as objectCtl',
       restrict: 'E',
-      scope: {
-        objects: '='
-      },
       templateUrl: 'partials/directives/object-control.html',
     };
   });
