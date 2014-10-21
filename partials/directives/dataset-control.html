@@ -9,8 +9,23 @@
   <div class="dataset">
     <table class="table table-bordered">
       <tbody ng-repeat="data in datasetCtl.grid">
+        <tr>
+          <td class="col-sm-2" rowspan="{{data.array.dimensions.length + 1}}">
+            {{data.name}}
+          </td>
+          <td colspan="3">
+            <div ng-if="data.attributes.standard_name">standard name: {{data.attributes.standard_name}}</div>
+            <div ng-if="data.attributes.long_name">long name: {{data.attributes.long_name}}</div>
+            <div ng-if="data.attributes.units">units: {{data.attributes.units}}</div>
+          </td>
+          <td class="col-sm-3" rowspan="{{data.array.dimensions.length + 1}}">
+            <button class="btn btn-default btn-block" ng-if="data.draw.contour2d" ng-click="datasetCtl.drawContour2D(data)">Contour</button>
+            <button class="btn btn-default btn-block" ng-if="data.draw.contour3d" ng-click="datasetCtl.drawContour3D(data)">Contour</button>
+            <button class="btn btn-default btn-block" ng-if="data.draw.isosurface" ng-click="datasetCtl.drawIsosurface(data)">Isosurface</button>
+            <button class="btn btn-default btn-block" ng-if="data.draw.pbr" ng-click="datasetCtl.draw(data)">PBR</button>
+          </td>
+        </tr>
         <tr ng-repeat="dimension in data.array.dimensions">
-          <td class="col-sm-2" ng-if="$index === 0" rowspan="{{data.array.dimensions.length}}">{{data.name}}</td>
           <td class="col-sm-2">{{dimension}}</td>
           <td class="col-sm-2">{{data.array.shape[$index]}}</td>
           <td class="col-sm-3">
@@ -22,11 +37,6 @@
                 </button>
               </span>
             </div>
-          </td>
-          <td class="col-sm-3" ng-if="$index === 0" rowspan="{{data.array.dimensions.length}}">
-            <button class="btn btn-default btn-block" ng-if="data.draw.contour" ng-click="datasetCtl.drawContour(data)">Contour</button>
-            <button class="btn btn-default btn-block" ng-if="data.draw.isosurface" ng-click="datasetCtl.drawIsosurface(data)">Isosurface</button>
-            <button class="btn btn-default btn-block" ng-if="data.draw.pbr" ng-click="datasetCtl.draw(data)">PBR</button>
           </td>
         </tr>
       </tbody>

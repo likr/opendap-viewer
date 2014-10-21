@@ -345,20 +345,20 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     }));
     return result;
   }
-  angular.module('opendap-viewer').controller('DatasetController', (($traceurRuntime.createClass)(function($scope, $modal, scene, objects, ContourGeometry, IsosurfaceGeometry) {
-    this.$scope = $scope;
+  angular.module('opendap-viewer').controller('DatasetController', (($traceurRuntime.createClass)(function($q, $modal, scene, objects, ContourGeometry, IsosurfaceGeometry) {
+    this.$q = $q;
     this.$modal = $modal;
     this.scene = scene;
     this.objects = objects;
     this.ContourGeometry = ContourGeometry;
     this.IsosurfaceGeometry = IsosurfaceGeometry;
     this.grid = [];
-    this.url = 'http://localhost/dias/thredds/dodsC/DIAS/MOVE-RA2014';
+    this.url = 'http://dias-tb2.tkl.iis.u-tokyo.ac.jp:10080/thredds/dodsC/DIAS/MOVE-RA2014';
   }, {
     loadDataset: function() {
       var $__0 = this;
       var url = this.url;
-      jqdap.loadDataset(url).then((function(dataset) {
+      this.$q.when(jqdap.loadDataset(url)).then((function(dataset) {
         var key,
             data,
             axes;
@@ -373,14 +373,14 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
               }));
               axes = coordinates(data, dataset);
               data.draw = {
-                contour: axes.size >= 2,
+                contour2d: axes.size == 2,
+                contour3d: axes.size == 3,
                 isosurface: axes.size === 3,
                 pbr: axes.size === 3
               };
             }
           }
         }
-        $__0.$scope.$apply();
       }));
     },
     draw: function(data) {
@@ -390,10 +390,31 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
         console.log(data);
       }));
     },
-    drawContour: function(data) {
+    drawContour2D: function(data) {
       var $__0 = this;
       var url = queryUrl(data);
-      jqdap.loadData(url).then((function(data) {
+      this.$q.when(jqdap.loadData(url)).then((function(data) {
+        var geometry = new $__0.ContourGeometry(data[0][0][0], {
+          x: data[0][3],
+          y: data[0][2]
+        }, -9.989999710577421e+33);
+        var material = new THREE.MeshBasicMaterial({
+          vertexColors: THREE.VertexColors,
+          side: THREE.DoubleSide
+        });
+        var mesh = new THREE.Mesh(geometry, material);
+        $__0.scene.add(mesh);
+        $__0.objects.push({
+          name: url,
+          mesh: mesh,
+          show: true
+        });
+      }));
+    },
+    drawContour3D: function(data) {
+      var $__0 = this;
+      var url = queryUrl(data);
+      this.$q.when(jqdap.loadData(url)).then((function(data) {
         var geometry = new $__0.ContourGeometry(data[0][0][0][0], {
           x: data[0][4],
           y: data[0][3]
@@ -409,7 +430,6 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
           mesh: mesh,
           show: true
         });
-        $__0.$scope.$apply();
       }));
     },
     drawIsosurface: function(data) {
@@ -419,7 +439,7 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
         controller: 'IsovalueDialogController as isovalueCtl',
         templateUrl: 'partials/dialogs/isovalue.html'
       }).result.then((function(result) {
-        jqdap.loadData(url).then((function(data) {
+        $__0.$q.when(jqdap.loadData(url)).then((function(data) {
           var geometry = new $__0.IsosurfaceGeometry(data[0][0][0], {
             x: data[0][4],
             y: data[0][3],
@@ -438,7 +458,6 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
             mesh: mesh,
             show: true
           });
-          $__0.$scope.$apply();
         }));
       }));
     },
