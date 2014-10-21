@@ -31,7 +31,7 @@ angular.module('opendap-viewer')
       this.ContourGeometry = ContourGeometry;
       this.IsosurfaceGeometry = IsosurfaceGeometry;
       this.grid = [];
-      this.url = 'http://localhost/dias/thredds/dodsC/DIAS/MOVE-RA2014';
+      this.url = 'http://dias-tb2.tkl.iis.u-tokyo.ac.jp:10080/thredds/dodsC/DIAS/MOVE-RA2014';
     }
 
     loadDataset() {
