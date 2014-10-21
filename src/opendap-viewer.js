@@ -1,9 +1,4 @@
-angular.module('opendap-viewer', ['ui.router', 'ui.bootstrap', 'ngDragDrop']);
-
-angular.module('opendap-viewer')
-  .config($urlRouterProvider => {
-    $urlRouterProvider.otherwise('/');
-  });
+angular.module('opendap-viewer', ['ui.bootstrap', 'ngDragDrop']);
 
 angular.module('opendap-viewer')
   .run(($http, scene) => {
