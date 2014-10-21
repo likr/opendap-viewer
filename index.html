@@ -6,20 +6,27 @@
 <link rel="stylesheet" href="styles/lib/bootstrap.min.css"/>
 <link rel="stylesheet" href="styles/opendap-viewer.css"/>
 </head>
-<body>
-<div id="frame">
-  <div class="container-fluid" style="padding-top: 15px; padding-bottom: 15px;">
-    <div ui-view></div>
+<body ng-controller="MainController as main">
+<nav class="navbar navbar-default" id="header">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">Opendap Viewer</a>
+    </div>
+    <form class="navbar-form navbar-right">
+      <button class="btn btn-default" ng-click="main.toggleShowControl()">Control</button>
+    </form>
   </div>
+</nav>
+<div id="contents">
+  <screen></screen>
 </div>
+<control ng-show="main.showControl"></control>
 <script src="scripts/lib/traceur-runtime.min.js"></script>
 <script src="scripts/lib/jquery.min.js"></script>
 <script src="scripts/lib/jquery-ui.min.js"></script>
 <script src="scripts/lib/jquery.ui.touch-punch.js"></script>
 <script src="scripts/lib/bootstrap.min.js"></script>
 <script src="scripts/lib/angular.min.js"></script>
-<script src="scripts/lib/angular-ui-router.min.js"></script>
-<script src="scripts/lib/angular-ui-router.min.js"></script>
 <script src="scripts/lib/angular-dragdrop.min.js"></script>
 <script src="scripts/lib/ui-bootstrap.min.js"></script>
 <script src="scripts/lib/ui-bootstrap-tpls.min.js"></script>

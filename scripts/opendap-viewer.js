@@ -1,10 +1,7 @@
 var $__src_95_opendap_45_viewer__ = (function() {
   "use strict";
   var __moduleName = "src_opendap-viewer";
-  angular.module('opendap-viewer', ['ui.router', 'ui.bootstrap', 'ngDragDrop']);
-  angular.module('opendap-viewer').config((function($urlRouterProvider) {
-    $urlRouterProvider.otherwise('/');
-  }));
+  angular.module('opendap-viewer', ['ui.bootstrap', 'ngDragDrop']);
   angular.module('opendap-viewer').run((function($http, scene) {
     $http.get('data/map.json').success((function(data) {
       var geo = topojson.feature(data, data.objects.countries);
@@ -45,7 +42,6 @@ var $__src_95_services_47_camera__ = (function() {
   angular.module('opendap-viewer').factory('camera', (function() {
     var theta = 45;
     var camera = new THREE.PerspectiveCamera(theta, 1, 0.1, 1000);
-    camera.position.set(0, 0, 180 / Math.tan(Math.PI * 45 / 360));
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     return camera;
   }));
@@ -255,64 +251,71 @@ var $__src_95_services_47_target__ = (function() {
   return {};
 })();
 
+var $__src_95_directives_47_camera_45_control__ = (function() {
+  "use strict";
+  var __moduleName = "src_directives/camera-control";
+  angular.module('opendap-viewer').controller('CameraController', (($traceurRuntime.createClass)(function($scope, camera, target) {
+    var $__0 = this;
+    this.camera = camera;
+    this.target = target;
+    this.latFrom = -90;
+    this.latTo = 90;
+    this.lonFrom = -180;
+    this.lonTo = 180;
+    $scope.$watch((function() {
+      return $__0.latFrom;
+    }), (function(oldValue, newValue) {
+      if (oldValue !== newValue) {
+        $__0.resetCamera();
+      }
+    }));
+    $scope.$watch((function() {
+      return $__0.latTo;
+    }), (function(oldValue, newValue) {
+      if (oldValue !== newValue) {
+        $__0.resetCamera();
+      }
+    }));
+    $scope.$watch((function() {
+      return $__0.lonFrom;
+    }), (function(oldValue, newValue) {
+      if (oldValue !== newValue) {
+        $__0.resetCamera();
+      }
+    }));
+    $scope.$watch((function() {
+      return $__0.lonTo;
+    }), (function(oldValue, newValue) {
+      if (oldValue !== newValue) {
+        $__0.resetCamera();
+      }
+    }));
+  }, {resetCamera: function() {
+      var width = this.latTo - this.latFrom;
+      var height = this.lonTo - this.lonFrom;
+      var size = Math.max(width, height / this.camera.aspect);
+      var centerX = (this.lonTo + this.lonFrom) / 2;
+      var centerY = (this.latTo + this.latFrom) / 2;
+      var theta = this.camera.fov;
+      this.camera.position.set(centerX, centerY, size / 2 / Math.tan(Math.PI * theta / 360));
+      this.camera.lookAt(new THREE.Vector3(centerX, centerY, 0));
+      this.camera.updateProjectionMatrix();
+      this.target.set(centerX, centerY, 0);
+    }}, {}))).directive('cameraControl', (function() {
+    return {
+      controller: 'CameraController as cameraCtl',
+      restrict: 'E',
+      templateUrl: 'partials/directives/camera-control.html'
+    };
+  }));
+  return {};
+})();
+
 var $__src_95_directives_47_control__ = (function() {
   "use strict";
   var __moduleName = "src_directives/control";
-  angular.module('opendap-viewer').controller('ControlController', (function() {
-    var ControlController = function ControlController($scope, scene, camera, target) {
-      var $__0 = this;
-      this.url = 'data/s.dods';
-      this.scene = scene;
-      this.camera = camera;
-      this.target = target;
-      this.latFrom = -90;
-      this.latTo = 90;
-      this.lonFrom = -180;
-      this.lonTo = 180;
-      $scope.$watch((function() {
-        return $__0.latFrom;
-      }), (function(oldValue, newValue) {
-        if (oldValue !== newValue) {
-          $__0.resetCamera();
-        }
-      }));
-      $scope.$watch((function() {
-        return $__0.latTo;
-      }), (function(oldValue, newValue) {
-        if (oldValue !== newValue) {
-          $__0.resetCamera();
-        }
-      }));
-      $scope.$watch((function() {
-        return $__0.lonFrom;
-      }), (function(oldValue, newValue) {
-        if (oldValue !== newValue) {
-          $__0.resetCamera();
-        }
-      }));
-      $scope.$watch((function() {
-        return $__0.lonTo;
-      }), (function(oldValue, newValue) {
-        if (oldValue !== newValue) {
-          $__0.resetCamera();
-        }
-      }));
-    };
-    return ($traceurRuntime.createClass)(ControlController, {resetCamera: function() {
-        var width = this.latTo - this.latFrom;
-        var height = this.lonTo - this.lonFrom;
-        var size = Math.max(width, height);
-        var centerX = (this.lonTo + this.lonFrom) / 2;
-        var centerY = (this.latTo + this.latFrom) / 2;
-        var theta = this.camera.fov;
-        this.camera.position.set(centerX, centerY, size / Math.tan(Math.PI * theta / 360));
-        this.camera.lookAt(new THREE.Vector3(centerX, centerY, 0));
-        this.camera.updateProjectionMatrix();
-        this.target.set(centerX, centerY, 0);
-      }}, {});
-  }())).directive('control', (function() {
+  angular.module('opendap-viewer').directive('control', (function() {
     return {
-      controller: 'ControlController as ctl',
       restrict: 'E',
       templateUrl: 'partials/directives/control.html'
     };
@@ -525,6 +528,9 @@ var $__src_95_directives_47_screen__ = (function() {
       link: (function(scope, element, attributes) {
         var width = element.width();
         var height = element.height();
+        camera.aspect = width / height;
+        camera.position.set(0, 0, Math.max(90, 180 / camera.aspect) / Math.tan(Math.PI * camera.fov / 360));
+        camera.updateProjectionMatrix();
         var renderer = new THREE.WebGLRenderer();
         renderer.setClearColor(0x87cefa, 1.0);
         renderer.setSize(width, height);
@@ -536,7 +542,11 @@ var $__src_95_directives_47_screen__ = (function() {
         trackball.target = target;
         render();
         $($window).resize((function() {
-          renderer.setSize(element.width(), element.height());
+          var width = element.width();
+          var height = element.height();
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+          renderer.setSize(width, height);
           renderer.render(scene, camera);
         }));
         function render() {
@@ -554,16 +564,9 @@ var $__src_95_directives_47_screen__ = (function() {
 var $__src_95_controllers_47_main__ = (function() {
   "use strict";
   var __moduleName = "src_controllers/main";
-  angular.module('opendap-viewer').config((function($stateProvider) {
-    $stateProvider.state('main', {
-      controller: 'MainController as main',
-      templateUrl: 'partials/controllers/main.html',
-      url: '/'
-    });
-  })).controller('MainController', (function() {
+  angular.module('opendap-viewer').controller('MainController', (function() {
     var MainController = function MainController() {
-      this.showControl = false;
-      this.showDatasetControl = true;
+      this.showControl = true;
       this.objects = [];
     };
     return ($traceurRuntime.createClass)(MainController, {toggleShowControl: function() {
