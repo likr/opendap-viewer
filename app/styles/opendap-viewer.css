@@ -60,6 +60,9 @@ control {
   top: 90px;
   right: 15px;
 }
+control>div {
+  z-index: 100;
+}
 control .tab-content {
   margin-top: 20px;
 }

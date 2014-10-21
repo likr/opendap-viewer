@@ -23,20 +23,20 @@ function coordinates(data, dataset) {
 
 angular.module('opendap-viewer')
   .controller('DatasetController', class {
-    constructor($scope, $modal, scene, objects, ContourGeometry, IsosurfaceGeometry) {
-      this.$scope = $scope;
+    constructor($q, $modal, scene, objects, ContourGeometry, IsosurfaceGeometry) {
+      this.$q = $q;
       this.$modal = $modal;
       this.scene = scene;
       this.objects = objects;
       this.ContourGeometry = ContourGeometry;
       this.IsosurfaceGeometry = IsosurfaceGeometry;
       this.grid = [];
-      this.url = 'http://localhost/dias/thredds/dodsC/DIAS/MOVE-RA2014';
+      this.url = 'http://dias-tb2.tkl.iis.u-tokyo.ac.jp:10080/thredds/dodsC/DIAS/MOVE-RA2014';
     }
 
     loadDataset() {
       var url = this.url;
-      jqdap.loadDataset(url)
+      this.$q.when(jqdap.loadDataset(url))
         .then(dataset => {
           var key, data, axes;
           for (key in dataset) {
@@ -50,14 +50,14 @@ angular.module('opendap-viewer')
                 });
                 axes = coordinates(data, dataset);
                 data.draw = {
-                  contour: axes.size >= 2,
+                  contour2d: axes.size == 2,
+                  contour3d: axes.size == 3,
                   isosurface: axes.size === 3,
                   pbr: axes.size === 3
                 };
               }
             }
           }
-          this.$scope.$apply();
         });
     }
 
@@ -70,9 +70,31 @@ angular.module('opendap-viewer')
         });
     }
 
-    drawContour(data) {
+    drawContour2D(data) {
       var url = queryUrl(data);
-      jqdap.loadData(url)
+      this.$q.when(jqdap.loadData(url))
+        .then(data => {
+          var geometry = new this.ContourGeometry(data[0][0][0], {
+            x: data[0][3],
+            y: data[0][2]
+          }, -9.989999710577421e+33);
+          var material = new THREE.MeshBasicMaterial({
+            vertexColors: THREE.VertexColors,
+            side: THREE.DoubleSide,
+          });
+          var mesh = new THREE.Mesh(geometry, material);
+          this.scene.add(mesh);
+          this.objects.push({
+            name: url,
+            mesh: mesh,
+            show: true
+          });
+        });
+    }
+
+    drawContour3D(data) {
+      var url = queryUrl(data);
+      this.$q.when(jqdap.loadData(url))
         .then(data => {
           var geometry = new this.ContourGeometry(data[0][0][0][0], {
             x: data[0][4],
@@ -89,7 +111,6 @@ angular.module('opendap-viewer')
             mesh: mesh,
             show: true
           });
-          this.$scope.$apply();
         });
     }
 
@@ -102,7 +123,7 @@ angular.module('opendap-viewer')
         })
         .result
         .then(result => {
-          jqdap.loadData(url)
+          this.$q.when(jqdap.loadData(url))
             .then(data => {
               var geometry = new this.IsosurfaceGeometry(data[0][0][0], {
                 x: data[0][4],
@@ -122,7 +143,6 @@ angular.module('opendap-viewer')
                 mesh: mesh,
                 show: true
               });
-              this.$scope.$apply();
             });
         });
     }
