@@ -226,6 +226,15 @@ var $__src_95_services_47_light__ = (function() {
   return {};
 })();
 
+var $__src_95_services_47_objects__ = (function() {
+  "use strict";
+  var __moduleName = "src_services/objects";
+  angular.module('opendap-viewer').factory('objects', (function() {
+    return [];
+  }));
+  return {};
+})();
+
 var $__src_95_services_47_scene__ = (function() {
   "use strict";
   var __moduleName = "src_services/scene";
@@ -320,6 +329,9 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     })).join('');
     return (data.url + ".dods?" + data.name + range);
   }
+  function axisUrl(data, index) {
+    return (data.url + ".dods?" + data.array.dimensions[index]);
+  }
   function coordinates(data, dataset) {
     var result = new Set();
     data.array.dimensions.forEach((function(dimension) {
@@ -330,10 +342,11 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     }));
     return result;
   }
-  angular.module('opendap-viewer').controller('DatasetController', (($traceurRuntime.createClass)(function($scope, $modal, scene, ContourGeometry, IsosurfaceGeometry) {
+  angular.module('opendap-viewer').controller('DatasetController', (($traceurRuntime.createClass)(function($scope, $modal, scene, objects, ContourGeometry, IsosurfaceGeometry) {
     this.$scope = $scope;
     this.$modal = $modal;
     this.scene = scene;
+    this.objects = objects;
     this.ContourGeometry = ContourGeometry;
     this.IsosurfaceGeometry = IsosurfaceGeometry;
     this.grid = [];
@@ -353,7 +366,7 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
             if (data.type === 'Grid') {
               $__0.grid.push(data);
               data.query = data.array.shape.map((function(shape, i) {
-                return ("0:" + (shape - 1));
+                return ("0:1:" + (shape - 1));
               }));
               axes = coordinates(data, dataset);
               data.draw = {
@@ -388,6 +401,12 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
         });
         var mesh = new THREE.Mesh(geometry, material);
         $__0.scene.add(mesh);
+        $__0.objects.push({
+          name: url,
+          mesh: mesh,
+          show: true
+        });
+        $__0.$scope.$apply();
       }));
     },
     drawIsosurface: function(data) {
@@ -411,7 +430,28 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
           });
           var mesh = new THREE.Mesh(geometry, material);
           $__0.scene.add(mesh);
+          $__0.objects.push({
+            name: url,
+            mesh: mesh,
+            show: true
+          });
+          $__0.$scope.$apply();
         }));
+      }));
+    },
+    inputQuery: function(data, index) {
+      this.$modal.open({
+        controller: 'QueryDialogController as queryCtl',
+        resolve: {values: (function($q) {
+            var deferred = $q.defer();
+            jqdap.loadData(axisUrl(data, index)).then((function(data) {
+              deferred.resolve(data[0]);
+            }));
+            return deferred.promise;
+          })},
+        templateUrl: 'partials/dialogs/query.html'
+      }).result.then((function(result) {
+        data.query[index] = (result.from + ":" + result.step + ":" + result.to);
       }));
     }
   }, {}))).controller('IsovalueDialogController', (($traceurRuntime.createClass)(function($modalInstance) {
@@ -428,11 +468,50 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     cancel: function() {
       this.$modalInstance.dismiss('cancel');
     }
+  }, {}))).controller('QueryDialogController', (($traceurRuntime.createClass)(function($modalInstance, values) {
+    this.$modalInstance = $modalInstance;
+    this.values = values;
+    this.from = values[0];
+    this.to = values[values.length - 1];
+    this.step = 1;
+  }, {
+    ok: function() {
+      this.$modalInstance.close({
+        from: this.values.indexOf(this.from),
+        to: this.values.indexOf(this.to),
+        step: this.step
+      });
+    },
+    cancel: function() {
+      this.$modalInstance.dismiss('cancel');
+    }
   }, {}))).directive('datasetControl', (function() {
     return {
       controller: 'DatasetController as datasetCtl',
       restrict: 'E',
       templateUrl: 'partials/directives/dataset-control.html'
+    };
+  }));
+  return {};
+})();
+
+var $__src_95_directives_47_object_45_control__ = (function() {
+  "use strict";
+  var __moduleName = "src_directives/object-control";
+  angular.module('opendap-viewer').controller('ObjectController', (($traceurRuntime.createClass)(function(scene, objects) {
+    this.scene = scene;
+    this.objects = objects;
+  }, {toggle: function(object) {
+      if (object.show) {
+        this.scene.add(object.mesh);
+      } else {
+        this.scene.remove(object.mesh);
+      }
+    }}, {}))).directive('objectControl', (function() {
+    return {
+      controller: 'ObjectController as objectCtl',
+      restrict: 'E',
+      templateUrl: 'partials/directives/object-control.html'
     };
   }));
   return {};
@@ -485,6 +564,7 @@ var $__src_95_controllers_47_main__ = (function() {
     var MainController = function MainController() {
       this.showControl = false;
       this.showDatasetControl = true;
+      this.objects = [];
     };
     return ($traceurRuntime.createClass)(MainController, {toggleShowControl: function() {
         this.showControl = !this.showControl;

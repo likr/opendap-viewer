@@ -1,6 +1,6 @@
 <div class="control-container" data-drag="true" jqyoui-draggable>
   <div class="control-header">
-    <span class="title">Control</span>
+    <span class="title">Dataset Control</span>
     <button type="button" class="close">
       <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
     </button>
@@ -22,7 +22,14 @@
               <td class="col-sm-2">{{dimension}}</td>
               <td class="col-sm-2">{{data.array.shape[$index]}}</td>
               <td class="col-sm-3">
-                <input class="form-control" ng-model="data.query[$index]">
+                <div class="input-group">
+                  <input class="form-control" ng-model="data.query[$index]">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" ng-click="datasetCtl.inputQuery(data, $index)">
+                      <span class="caret"></span>
+                    </button>
+                  </span>
+                </div>
               </td>
               <td class="col-sm-3" ng-if="$index === 0" rowspan="{{data.array.dimensions.length}}">
                 <button class="btn btn-default btn-block" ng-if="data.draw.contour" ng-click="datasetCtl.drawContour(data)">Contour</button>
