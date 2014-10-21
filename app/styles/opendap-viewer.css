@@ -61,6 +61,15 @@ dataset-control .control-contents {
   background-color: #fff;
   margin-bottom: 0;
 }
+object-control {
+  position: absolute;
+  top: 600px;
+  right: 15px;
+}
+object-control .control-contents {
+  width: 500px;
+  height: 300px;
+}
 screen {
   display: block;
 }

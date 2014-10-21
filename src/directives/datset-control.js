@@ -27,6 +27,7 @@ angular.module('opendap-viewer')
       this.$scope = $scope;
       this.$modal = $modal;
       this.scene = scene;
+      this.objects = $scope.objects;
       this.ContourGeometry = ContourGeometry;
       this.IsosurfaceGeometry = IsosurfaceGeometry;
       this.grid = [];
@@ -83,6 +84,12 @@ angular.module('opendap-viewer')
           });
           var mesh = new THREE.Mesh(geometry, material);
           this.scene.add(mesh);
+          this.objects.push({
+            name: url,
+            mesh: mesh,
+            show: true
+          });
+          this.$scope.$apply();
         });
     }
 
@@ -110,6 +117,12 @@ angular.module('opendap-viewer')
               });
               var mesh = new THREE.Mesh(geometry, material);
               this.scene.add(mesh);
+              this.objects.push({
+                name: url,
+                mesh: mesh,
+                show: true
+              });
+              this.$scope.$apply();
             });
         });
     }
@@ -179,6 +192,9 @@ angular.module('opendap-viewer')
     return {
       controller: 'DatasetController as datasetCtl',
       restrict: 'E',
+      scope: {
+        objects: '='
+      },
       templateUrl: 'partials/directives/dataset-control.html',
     };
   });
