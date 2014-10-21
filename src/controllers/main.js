@@ -10,6 +10,7 @@ angular.module('opendap-viewer')
     constructor() {
       this.showControl = false;
       this.showDatasetControl = true;
+      this.objects = [];
     }
 
     toggleShowControl() {
