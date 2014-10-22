@@ -15,8 +15,8 @@
     "topojson": "~1.6.18",
     "jquery-ui": "~1.11.1",
     "angular-dragdrop": "~1.0.8",
-    "jqueryui-touch-punch": "*",
-    "threejs-controls": "*"
+    "threejs-controls": "*",
+    "jquery-ui-touch-punch": "https://github.com/chris-cortner/jquery-ui-touch-punch.git"
   },
   "exportsOverride": {
     "angular-ui-router": {
