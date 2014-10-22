@@ -1,3 +1,19 @@
+function parseUrl(url) {
+  var match = url.match(/(\w+):\/\/(\w+):(\w+)@(.+)/);
+  if (match) {
+    return {
+      url: `${match[1]}://${match[4]}`,
+      username: match[2],
+      password: match[3]
+    };
+  } else {
+    return {
+      url: url
+    };
+  }
+}
+
+
 function queryUrl(data) {
   var range = data.query.map(q => `[${q}]`).join('');
   return `${data.url}.dods?${data.name}${range}`;
@@ -36,7 +52,7 @@ angular.module('opendap-viewer')
 
     loadDataset() {
       var url = this.url;
-      this.jqdap.loadDataset(url)
+      this.requestDataset(url)
         .then(dataset => {
           var key, data, axes;
           for (key in dataset) {
@@ -64,7 +80,7 @@ angular.module('opendap-viewer')
     draw(data) {
       var url = queryUrl(data);
       console.log(url, data);
-      this.jqdap.loadData(url)
+      this.requestData(url)
         .then(data => {
           console.log(data);
         });
@@ -72,7 +88,7 @@ angular.module('opendap-viewer')
 
     drawContour2D(data) {
       var url = queryUrl(data);
-      this.jqdap.loadData(url)
+      this.requestData(url)
         .then(data => {
           var geometry = new this.ContourGeometry(data[0][0][0], {
             x: data[0][3],
@@ -94,7 +110,7 @@ angular.module('opendap-viewer')
 
     drawContour3D(data) {
       var url = queryUrl(data);
-      this.jqdap.loadData(url)
+      this.requestData(url)
         .then(data => {
           var geometry = new this.ContourGeometry(data[0][0][0][0], {
             x: data[0][4],
@@ -123,7 +139,7 @@ angular.module('opendap-viewer')
         })
         .result
         .then(result => {
-          this.jqdap.loadData(url)
+          this.requestData(url)
             .then(data => {
               var geometry = new this.IsosurfaceGeometry(data[0][0][0], {
                 x: data[0][4],
@@ -154,7 +170,7 @@ angular.module('opendap-viewer')
           resolve: {
             values: $q => {
               var deferred = $q.defer();
-              this.jqdap.loadData(axisUrl(data, index))
+              this.requestData(axisUrl(data, index))
                 .then(data => {
                   deferred.resolve(data[0]);
                 });
@@ -167,6 +183,26 @@ angular.module('opendap-viewer')
         .then(result => {
           data.query[index] = `${result.from}:${result.step}:${result.to}`;
         });
+    }
+
+    requestData(url) {
+      var request = parseUrl(url);
+      var options = {};
+      if (request.username && request.password) {
+        options.username = request.username;
+        options.password = request.password;
+      }
+      return this.jqdap.loadData(request.url, options);
+    }
+
+    requestDataset(url) {
+      var request = parseUrl(url);
+      var options = {};
+      if (request.username && request.password) {
+        options.username = request.username;
+        options.password = request.password;
+      }
+      return this.jqdap.loadDataset(request.url, options);
     }
   })
   .controller('IsovalueDialogController', class {
