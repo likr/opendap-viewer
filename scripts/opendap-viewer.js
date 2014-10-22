@@ -208,9 +208,11 @@ var $__src_95_services_47_jqdap__ = (function() {
   angular.module('opendap-viewer').factory('jqdap', (function($window, $q) {
     return {
       loadDataset: (function(url, options) {
+        options.withCredentials = true;
         return $q.when($window.jqdap.loadDataset(url, options));
       }),
       loadData: (function(url, options) {
+        options.withCredentials = true;
         return $q.when($window.jqdap.loadData(url, options));
       })
     };
