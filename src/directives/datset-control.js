@@ -23,9 +23,9 @@ function coordinates(data, dataset) {
 
 angular.module('opendap-viewer')
   .controller('DatasetController', class {
-    constructor($q, $modal, scene, objects, ContourGeometry, IsosurfaceGeometry) {
-      this.$q = $q;
+    constructor($modal, jqdap, scene, objects, ContourGeometry, IsosurfaceGeometry) {
       this.$modal = $modal;
+      this.jqdap = jqdap;
       this.scene = scene;
       this.objects = objects;
       this.ContourGeometry = ContourGeometry;
@@ -36,7 +36,7 @@ angular.module('opendap-viewer')
 
     loadDataset() {
       var url = this.url;
-      this.$q.when(jqdap.loadDataset(url))
+      this.jqdap.loadDataset(url)
         .then(dataset => {
           var key, data, axes;
           for (key in dataset) {
@@ -64,7 +64,7 @@ angular.module('opendap-viewer')
     draw(data) {
       var url = queryUrl(data);
       console.log(url, data);
-      jqdap.loadData(url)
+      this.jqdap.loadData(url)
         .then(data => {
           console.log(data);
         });
@@ -72,7 +72,7 @@ angular.module('opendap-viewer')
 
     drawContour2D(data) {
       var url = queryUrl(data);
-      this.$q.when(jqdap.loadData(url))
+      this.jqdap.loadData(url)
         .then(data => {
           var geometry = new this.ContourGeometry(data[0][0][0], {
             x: data[0][3],
@@ -94,7 +94,7 @@ angular.module('opendap-viewer')
 
     drawContour3D(data) {
       var url = queryUrl(data);
-      this.$q.when(jqdap.loadData(url))
+      this.jqdap.loadData(url)
         .then(data => {
           var geometry = new this.ContourGeometry(data[0][0][0][0], {
             x: data[0][4],
@@ -123,7 +123,7 @@ angular.module('opendap-viewer')
         })
         .result
         .then(result => {
-          this.$q.when(jqdap.loadData(url))
+          this.jqdap.loadData(url)
             .then(data => {
               var geometry = new this.IsosurfaceGeometry(data[0][0][0], {
                 x: data[0][4],
@@ -154,7 +154,7 @@ angular.module('opendap-viewer')
           resolve: {
             values: $q => {
               var deferred = $q.defer();
-              jqdap.loadData(axisUrl(data, index))
+              this.jqdap.loadData(axisUrl(data, index))
                 .then(data => {
                   deferred.resolve(data[0]);
                 });
