@@ -207,11 +207,11 @@ var $__src_95_services_47_jqdap__ = (function() {
   var __moduleName = "src_services/jqdap";
   angular.module('opendap-viewer').factory('jqdap', (function($window, $q) {
     return {
-      loadDataset: (function(url) {
-        return $q.when($window.jqdap.loadDataset(url, {withCredentials: true}));
+      loadDataset: (function(url, options) {
+        return $q.when($window.jqdap.loadDataset(url, options));
       }),
-      loadData: (function(url) {
-        return $q.when($window.jqdap.loadData(url, {withCredentials: true}));
+      loadData: (function(url, options) {
+        return $q.when($window.jqdap.loadData(url, options));
       })
     };
   }));
@@ -333,6 +333,18 @@ var $__src_95_directives_47_control__ = (function() {
 var $__src_95_directives_47_datset_45_control__ = (function() {
   "use strict";
   var __moduleName = "src_directives/datset-control";
+  function parseUrl(url) {
+    var match = url.match(/(\w+):\/\/(\w+):(\w+)@(.+)/);
+    if (match) {
+      return {
+        url: (match[1] + "://" + match[4]),
+        username: match[2],
+        password: match[3]
+      };
+    } else {
+      return {url: url};
+    }
+  }
   function queryUrl(data) {
     var range = data.query.map((function(q) {
       return ("[" + q + "]");
@@ -365,7 +377,7 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     loadDataset: function() {
       var $__0 = this;
       var url = this.url;
-      this.jqdap.loadDataset(url).then((function(dataset) {
+      this.requestDataset(url).then((function(dataset) {
         var key,
             data,
             axes;
@@ -393,14 +405,14 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     draw: function(data) {
       var url = queryUrl(data);
       console.log(url, data);
-      this.jqdap.loadData(url).then((function(data) {
+      this.requestData(url).then((function(data) {
         console.log(data);
       }));
     },
     drawContour2D: function(data) {
       var $__0 = this;
       var url = queryUrl(data);
-      this.jqdap.loadData(url).then((function(data) {
+      this.requestData(url).then((function(data) {
         var geometry = new $__0.ContourGeometry(data[0][0][0], {
           x: data[0][3],
           y: data[0][2]
@@ -421,7 +433,7 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     drawContour3D: function(data) {
       var $__0 = this;
       var url = queryUrl(data);
-      this.jqdap.loadData(url).then((function(data) {
+      this.requestData(url).then((function(data) {
         var geometry = new $__0.ContourGeometry(data[0][0][0][0], {
           x: data[0][4],
           y: data[0][3]
@@ -446,7 +458,7 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
         controller: 'IsovalueDialogController as isovalueCtl',
         templateUrl: 'partials/dialogs/isovalue.html'
       }).result.then((function(result) {
-        $__0.jqdap.loadData(url).then((function(data) {
+        $__0.requestData(url).then((function(data) {
           var geometry = new $__0.IsosurfaceGeometry(data[0][0][0], {
             x: data[0][4],
             y: data[0][3],
@@ -474,7 +486,7 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
         controller: 'QueryDialogController as queryCtl',
         resolve: {values: (function($q) {
             var deferred = $q.defer();
-            $__0.jqdap.loadData(axisUrl(data, index)).then((function(data) {
+            $__0.requestData(axisUrl(data, index)).then((function(data) {
               deferred.resolve(data[0]);
             }));
             return deferred.promise;
@@ -483,6 +495,24 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
       }).result.then((function(result) {
         data.query[index] = (result.from + ":" + result.step + ":" + result.to);
       }));
+    },
+    requestData: function(url) {
+      var request = parseUrl(url);
+      var options = {};
+      if (request.username && request.password) {
+        options.username = request.username;
+        options.password = request.password;
+      }
+      return this.jqdap.loadData(request.url, options);
+    },
+    requestDataset: function(url) {
+      var request = parseUrl(url);
+      var options = {};
+      if (request.username && request.password) {
+        options.username = request.username;
+        options.password = request.password;
+      }
+      return this.jqdap.loadDataset(request.url, options);
     }
   }, {}))).controller('IsovalueDialogController', (($traceurRuntime.createClass)(function($modalInstance) {
     this.$modalInstance = $modalInstance;

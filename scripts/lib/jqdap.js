@@ -20,12 +20,6 @@
     var options, password, username, withCredentials;
     username = arg.username, password = arg.password, withCredentials = arg.withCredentials;
     options = {};
-    if (username != null) {
-      options.username = username;
-    }
-    if (password != null) {
-      options.password = password;
-    }
     if (withCredentials != null) {
       options.xhrFields = {
         withCredentials: withCredentials
@@ -42,6 +36,11 @@
     options = parseArg(arg);
     options.dataType = 'binary';
     options.beforeSend = function(xhr) {
+      var credentials;
+      if ((arg.username != null) && (arg.password != null)) {
+        credentials = btoa("" + arg.username + ":" + arg.password);
+        xhr.setRequestHeader("Authorization", "Basic " + credentials);
+      }
       return xhr.overrideMimeType('text/plain; charset=x-user-defined');
     };
     options.converters = {
@@ -65,6 +64,13 @@
       arg = {};
     }
     options = parseArg(arg);
+    options.beforeSend = function(xhr) {
+      var credentials;
+      if ((arg.username != null) && (arg.password != null)) {
+        credentials = btoa("" + arg.username + ":" + arg.password);
+        return xhr.setRequestHeader('Authorization', "Basic " + credentials);
+      }
+    };
     ddsRequest = $.ajax(url + '.dds', options);
     dasRequest = $.ajax(url + '.das', options);
     return $.when(ddsRequest.promise(), dasRequest.promise()).then(function(dds, das) {
