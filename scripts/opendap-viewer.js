@@ -205,8 +205,15 @@ var $__src_95_services_47_isosurface_45_geometry__ = (function() {
 var $__src_95_services_47_jqdap__ = (function() {
   "use strict";
   var __moduleName = "src_services/jqdap";
-  angular.module('opendap-viewer').factory('jqdap', (function($window) {
-    return $window.jqdap;
+  angular.module('opendap-viewer').factory('jqdap', (function($window, $q) {
+    return {
+      loadDataset: (function(url) {
+        return $q.when($window.jqdap.loadDataset(url, {withCredentials: true}));
+      }),
+      loadData: (function(url) {
+        return $q.when($window.jqdap.loadData(url, {withCredentials: true}));
+      })
+    };
   }));
   return {};
 })();
@@ -345,9 +352,9 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     }));
     return result;
   }
-  angular.module('opendap-viewer').controller('DatasetController', (($traceurRuntime.createClass)(function($q, $modal, scene, objects, ContourGeometry, IsosurfaceGeometry) {
-    this.$q = $q;
+  angular.module('opendap-viewer').controller('DatasetController', (($traceurRuntime.createClass)(function($modal, jqdap, scene, objects, ContourGeometry, IsosurfaceGeometry) {
     this.$modal = $modal;
+    this.jqdap = jqdap;
     this.scene = scene;
     this.objects = objects;
     this.ContourGeometry = ContourGeometry;
@@ -358,7 +365,7 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     loadDataset: function() {
       var $__0 = this;
       var url = this.url;
-      this.$q.when(jqdap.loadDataset(url)).then((function(dataset) {
+      this.jqdap.loadDataset(url).then((function(dataset) {
         var key,
             data,
             axes;
@@ -386,14 +393,14 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     draw: function(data) {
       var url = queryUrl(data);
       console.log(url, data);
-      jqdap.loadData(url).then((function(data) {
+      this.jqdap.loadData(url).then((function(data) {
         console.log(data);
       }));
     },
     drawContour2D: function(data) {
       var $__0 = this;
       var url = queryUrl(data);
-      this.$q.when(jqdap.loadData(url)).then((function(data) {
+      this.jqdap.loadData(url).then((function(data) {
         var geometry = new $__0.ContourGeometry(data[0][0][0], {
           x: data[0][3],
           y: data[0][2]
@@ -414,7 +421,7 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     drawContour3D: function(data) {
       var $__0 = this;
       var url = queryUrl(data);
-      this.$q.when(jqdap.loadData(url)).then((function(data) {
+      this.jqdap.loadData(url).then((function(data) {
         var geometry = new $__0.ContourGeometry(data[0][0][0][0], {
           x: data[0][4],
           y: data[0][3]
@@ -439,7 +446,7 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
         controller: 'IsovalueDialogController as isovalueCtl',
         templateUrl: 'partials/dialogs/isovalue.html'
       }).result.then((function(result) {
-        $__0.$q.when(jqdap.loadData(url)).then((function(data) {
+        $__0.jqdap.loadData(url).then((function(data) {
           var geometry = new $__0.IsosurfaceGeometry(data[0][0][0], {
             x: data[0][4],
             y: data[0][3],
@@ -462,11 +469,12 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
       }));
     },
     inputQuery: function(data, index) {
+      var $__0 = this;
       this.$modal.open({
         controller: 'QueryDialogController as queryCtl',
         resolve: {values: (function($q) {
             var deferred = $q.defer();
-            jqdap.loadData(axisUrl(data, index)).then((function(data) {
+            $__0.jqdap.loadData(axisUrl(data, index)).then((function(data) {
               deferred.resolve(data[0]);
             }));
             return deferred.promise;
