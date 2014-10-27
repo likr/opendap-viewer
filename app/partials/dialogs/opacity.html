@@ -1,0 +1,15 @@
+<div class="modal-header">
+  <h3 class="modal-title">Input Opacity</h3>
+</div>
+<div class="modal-body">
+  <form>
+    <div class="form-group">
+      <label>Opacity</label>
+      <input class="form-control" type="number" min="0" max="1" step="0.1" ng-model="opacityCtl.opacity">
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-click="opacityCtl.ok()">OK</button>
+  <button class="btn btn-warning" ng-click="opacityCtl.cancel()">Cancel</button>
+</div>
