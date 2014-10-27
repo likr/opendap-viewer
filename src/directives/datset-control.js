@@ -110,23 +110,33 @@ angular.module('opendap-viewer')
 
     drawContour3D(data) {
       var url = queryUrl(data);
-      this.requestData(url)
-        .then(data => {
-          var geometry = new this.ContourGeometry(data[0][0][0][0], {
-            x: data[0][4],
-            y: data[0][3]
-          }, -9.989999710577421e+33);
-          var material = new THREE.MeshBasicMaterial({
-            vertexColors: THREE.VertexColors,
-            side: THREE.DoubleSide,
-          });
-          var mesh = new THREE.Mesh(geometry, material);
-          this.scene.add(mesh);
-          this.objects.push({
-            name: url,
-            mesh: mesh,
-            show: true
-          });
+      this.$modal
+        .open({
+          controller: 'OpacityDialogController as opacityCtl',
+          templateUrl:'partials/dialogs/opacity.html'
+        })
+        .result
+        .then(result => {
+          this.requestData(url)
+            .then(data => {
+              var geometry = new this.ContourGeometry(data[0][0][0][0], {
+                x: data[0][4],
+                y: data[0][3]
+              }, -9.989999710577421e+33);
+              var material = new THREE.MeshBasicMaterial({
+                opacity: result.opacity,
+                side: THREE.DoubleSide,
+                transparent: true,
+                vertexColors: THREE.VertexColors,
+              });
+              var mesh = new THREE.Mesh(geometry, material);
+              this.scene.add(mesh);
+              this.objects.push({
+                name: url,
+                mesh: mesh,
+                show: true
+              });
+            });
         });
     }
 
@@ -203,6 +213,22 @@ angular.module('opendap-viewer')
         options.password = request.password;
       }
       return this.jqdap.loadDataset(request.url, options);
+    }
+  })
+  .controller('OpacityDialogController', class {
+    constructor($modalInstance) {
+      this.$modalInstance = $modalInstance;
+      this.opacity = 1;
+    }
+
+    ok() {
+      this.$modalInstance.close({
+        opacity: +this.opacity,
+      });
+    }
+
+    cancel() {
+      this.$modalInstance.dismiss('cancel');
     }
   })
   .controller('IsovalueDialogController', class {
