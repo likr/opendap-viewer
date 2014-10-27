@@ -435,22 +435,29 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     drawContour3D: function(data) {
       var $__0 = this;
       var url = queryUrl(data);
-      this.requestData(url).then((function(data) {
-        var geometry = new $__0.ContourGeometry(data[0][0][0][0], {
-          x: data[0][4],
-          y: data[0][3]
-        }, -9.989999710577421e+33);
-        var material = new THREE.MeshBasicMaterial({
-          vertexColors: THREE.VertexColors,
-          side: THREE.DoubleSide
-        });
-        var mesh = new THREE.Mesh(geometry, material);
-        $__0.scene.add(mesh);
-        $__0.objects.push({
-          name: url,
-          mesh: mesh,
-          show: true
-        });
+      this.$modal.open({
+        controller: 'OpacityDialogController as opacityCtl',
+        templateUrl: 'partials/dialogs/opacity.html'
+      }).result.then((function(result) {
+        $__0.requestData(url).then((function(data) {
+          var geometry = new $__0.ContourGeometry(data[0][0][0][0], {
+            x: data[0][4],
+            y: data[0][3]
+          }, -9.989999710577421e+33);
+          var material = new THREE.MeshBasicMaterial({
+            opacity: result.opacity,
+            side: THREE.DoubleSide,
+            transparent: true,
+            vertexColors: THREE.VertexColors
+          });
+          var mesh = new THREE.Mesh(geometry, material);
+          $__0.scene.add(mesh);
+          $__0.objects.push({
+            name: url,
+            mesh: mesh,
+            show: true
+          });
+        }));
       }));
     },
     drawIsosurface: function(data) {
@@ -515,6 +522,16 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
         options.password = request.password;
       }
       return this.jqdap.loadDataset(request.url, options);
+    }
+  }, {}))).controller('OpacityDialogController', (($traceurRuntime.createClass)(function($modalInstance) {
+    this.$modalInstance = $modalInstance;
+    this.opacity = 1;
+  }, {
+    ok: function() {
+      this.$modalInstance.close({opacity: +this.opacity});
+    },
+    cancel: function() {
+      this.$modalInstance.dismiss('cancel');
     }
   }, {}))).controller('IsovalueDialogController', (($traceurRuntime.createClass)(function($modalInstance) {
     this.$modalInstance = $modalInstance;
