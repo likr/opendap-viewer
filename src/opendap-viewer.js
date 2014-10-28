@@ -7,7 +7,7 @@ angular.module('opendap-viewer')
         var geo = topojson.feature(data, data.objects.countries);
         var group = new THREE.Object3D();
         var material = new THREE.MeshBasicMaterial({
-          color: 0x00ff00,
+          color: 0x206a3f,
           side: THREE.DoubleSide,
         });
         geo.features.forEach(feature => {
