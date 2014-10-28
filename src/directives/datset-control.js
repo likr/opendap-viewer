@@ -87,10 +87,10 @@ angular.module('opendap-viewer')
     drawContour2D(data) {
       var url = queryUrl(data);
       this.requestData(url)
-        .then(data => {
-          var geometry = new this.ContourGeometry(data[0][0][0], {
-            x: data[0][3],
-            y: data[0][2]
+        .then(volume => {
+          var geometry = new this.ContourGeometry(volume[0][0][0], {
+            x: volume[0][3],
+            y: volume[0][2]
           }, ignoreValue(data));
           var material = new THREE.MeshBasicMaterial({
             vertexColors: THREE.VertexColors,
