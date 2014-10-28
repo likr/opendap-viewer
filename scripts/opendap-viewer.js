@@ -77,10 +77,10 @@ var $__src_95_services_47_contour_45_geometry__ = (function() {
         for (ix = 0; ix < nx - 1; ++ix) {
           var x0 = coordinates.x[ix];
           var x1 = coordinates.x[ix + 1];
-          this.vertices.push(new THREE.Vector3(x0, y0, -0.1));
-          this.vertices.push(new THREE.Vector3(x1, y0, -0.1));
-          this.vertices.push(new THREE.Vector3(x1, y1, -0.1));
-          this.vertices.push(new THREE.Vector3(x0, y1, -0.1));
+          this.vertices.push(new THREE.Vector3(x0, y0, coordinates.z));
+          this.vertices.push(new THREE.Vector3(x1, y0, coordinates.z));
+          this.vertices.push(new THREE.Vector3(x1, y1, coordinates.z));
+          this.vertices.push(new THREE.Vector3(x0, y1, coordinates.z));
           var color0 = new THREE.Color(color(plane[iy][ix]));
           var color1 = new THREE.Color(color(plane[iy][ix + 1]));
           var color2 = new THREE.Color(color(plane[iy + 1][ix + 1]));
@@ -194,7 +194,7 @@ var $__src_95_services_47_isosurface_45_geometry__ = (function() {
         var a = (s - s0) / (s1 - s0);
         var x = mix(p0[0], p1[0], a);
         var y = mix(p0[1], p1[1], a);
-        var z = -mix(p0[2], p1[2], a) / 60;
+        var z = mix(p0[2], p1[2], a);
         return new THREE.Vector3(x, y, z);
       }
     }, {}, {}, THREE.Geometry));
@@ -220,17 +220,6 @@ var $__src_95_services_47_jqdap__ = (function() {
   return {};
 })();
 
-var $__src_95_services_47_light__ = (function() {
-  "use strict";
-  var __moduleName = "src_services/light";
-  angular.module('opendap-viewer').factory('light', (function() {
-    var light = new THREE.DirectionalLight(new THREE.Color('white'));
-    light.position.set(0, 0, 1);
-    return light;
-  }));
-  return {};
-})();
-
 var $__src_95_services_47_objects__ = (function() {
   "use strict";
   var __moduleName = "src_services/objects";
@@ -243,9 +232,14 @@ var $__src_95_services_47_objects__ = (function() {
 var $__src_95_services_47_scene__ = (function() {
   "use strict";
   var __moduleName = "src_services/scene";
-  angular.module('opendap-viewer').factory('scene', (function(light) {
+  angular.module('opendap-viewer').factory('scene', (function() {
     var scene = new THREE.Scene();
-    scene.add(light);
+    var light1 = new THREE.DirectionalLight(new THREE.Color('white'));
+    light1.position.set(0, 0, 1);
+    scene.add(light1);
+    var light2 = new THREE.DirectionalLight(new THREE.Color('white'));
+    light2.position.set(0, 0, -1);
+    scene.add(light2);
     return scene;
   }));
   return {};
@@ -356,15 +350,29 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
   function axisUrl(data, index) {
     return (data.url + ".dods?" + data.array.dimensions[index]);
   }
-  function coordinates(data, dataset) {
-    var result = new Set();
-    data.array.dimensions.forEach((function(dimension) {
-      var axis = dataset[dimension].attributes.axis;
-      if (['X', 'Y', 'Z'].indexOf(axis) > -1) {
-        result.add(axis);
+  function ignoreValue(data) {
+    var value,
+        key,
+        keys = ['_fillValue', 'missing_value'];
+    for (var $__3 = keys[Symbol.iterator](),
+        $__4; !($__4 = $__3.next()).done; ) {
+      key = $__4.value;
+      {
+        if ((value = data.attributes[key]) !== undefined) {
+          return value;
+        }
       }
-    }));
-    return result;
+    }
+  }
+  function depthConverter(data) {
+    var sign = 1;
+    var keys = ['depth'];
+    if (keys.indexOf(data.attributes.long_name.toLowerCase()) >= 0) {
+      sign = -1;
+    }
+    return function(z) {
+      return sign * z / 60;
+    };
   }
   angular.module('opendap-viewer').controller('DatasetController', (($traceurRuntime.createClass)(function($modal, jqdap, scene, objects, ContourGeometry, IsosurfaceGeometry) {
     this.$modal = $modal;
@@ -392,13 +400,16 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
               data.query = data.array.shape.map((function(shape, i) {
                 return ("0:1:" + (shape - 1));
               }));
-              axes = coordinates(data, dataset);
+              axes = data.array.dimensions;
               data.draw = {
-                contour2d: axes.size == 2,
-                contour3d: axes.size == 3,
-                isosurface: axes.size === 3,
-                pbr: axes.size === 3
+                contour2d: axes.length == 3,
+                contour3d: axes.length == 4,
+                isosurface: axes.length === 4,
+                pbr: axes.length === 4
               };
+              data.x = dataset[data.array.dimensions[axes.length - 1]];
+              data.y = dataset[data.array.dimensions[axes.length - 2]];
+              data.z = dataset[data.array.dimensions[axes.length - 3]];
             }
           }
         }
@@ -414,11 +425,12 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
     drawContour2D: function(data) {
       var $__0 = this;
       var url = queryUrl(data);
-      this.requestData(url).then((function(data) {
-        var geometry = new $__0.ContourGeometry(data[0][0][0], {
-          x: data[0][3],
-          y: data[0][2]
-        }, -9.989999710577421e+33);
+      this.requestData(url).then((function(volume) {
+        var geometry = new $__0.ContourGeometry(volume[0][0][0], {
+          x: volume[0][3],
+          y: volume[0][2],
+          z: -0.5
+        }, ignoreValue(data));
         var material = new THREE.MeshBasicMaterial({
           vertexColors: THREE.VertexColors,
           side: THREE.DoubleSide
@@ -439,11 +451,12 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
         controller: 'OpacityDialogController as opacityCtl',
         templateUrl: 'partials/dialogs/opacity.html'
       }).result.then((function(result) {
-        $__0.requestData(url).then((function(data) {
-          var geometry = new $__0.ContourGeometry(data[0][0][0][0], {
-            x: data[0][4],
-            y: data[0][3]
-          }, -9.989999710577421e+33);
+        $__0.requestData(url).then((function(volume) {
+          var geometry = new $__0.ContourGeometry(volume[0][0][0][0], {
+            x: volume[0][4],
+            y: volume[0][3],
+            z: depthConverter(data.z)(volume[0][2][0])
+          }, ignoreValue(data));
           var material = new THREE.MeshBasicMaterial({
             opacity: result.opacity,
             side: THREE.DoubleSide,
@@ -467,11 +480,11 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
         controller: 'IsovalueDialogController as isovalueCtl',
         templateUrl: 'partials/dialogs/isovalue.html'
       }).result.then((function(result) {
-        $__0.requestData(url).then((function(data) {
-          var geometry = new $__0.IsosurfaceGeometry(data[0][0][0], {
-            x: data[0][4],
-            y: data[0][3],
-            z: data[0][2]
+        $__0.requestData(url).then((function(volume) {
+          var geometry = new $__0.IsosurfaceGeometry(volume[0][0][0], {
+            x: volume[0][4],
+            y: volume[0][3],
+            z: volume[0][2].map(depthConverter(data.z))
           }, result.isovalue);
           geometry.computeFaceNormals();
           geometry.computeVertexNormals();
