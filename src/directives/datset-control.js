@@ -25,15 +25,13 @@ function axisUrl(data, index) {
 }
 
 
-function coordinates(data, dataset) {
-  var result = new Set();
-  data.array.dimensions.forEach(dimension => {
-    var axis = dataset[dimension].attributes.axis;
-    if (['X', 'Y', 'Z'].indexOf(axis) > -1) {
-      result.add(axis);
+function ignoreValue(data) {
+  var value, key, keys = ['_fillValue', 'missing_value'];
+  for (key of keys) {
+    if ((value = data.attributes[key]) !== undefined) {
+      return value;
     }
-  });
-  return result;
+  }
 }
 
 
@@ -64,12 +62,12 @@ angular.module('opendap-viewer')
                 data.query = data.array.shape.map((shape, i) => {
                   return `0:1:${shape - 1}`;
                 });
-                axes = coordinates(data, dataset);
+                axes = data.array.dimensions;
                 data.draw = {
-                  contour2d: axes.size == 2,
-                  contour3d: axes.size == 3,
-                  isosurface: axes.size === 3,
-                  pbr: axes.size === 3
+                  contour2d: axes.length == 3,
+                  contour3d: axes.length == 4,
+                  isosurface: axes.length === 4,
+                  pbr: axes.length === 4
                 };
               }
             }
@@ -93,7 +91,7 @@ angular.module('opendap-viewer')
           var geometry = new this.ContourGeometry(data[0][0][0], {
             x: data[0][3],
             y: data[0][2]
-          }, -9.989999710577421e+33);
+          }, ignoreValue(data));
           var material = new THREE.MeshBasicMaterial({
             vertexColors: THREE.VertexColors,
             side: THREE.DoubleSide,
@@ -118,11 +116,11 @@ angular.module('opendap-viewer')
         .result
         .then(result => {
           this.requestData(url)
-            .then(data => {
-              var geometry = new this.ContourGeometry(data[0][0][0][0], {
-                x: data[0][4],
-                y: data[0][3]
-              }, -9.989999710577421e+33);
+            .then(volume => {
+              var geometry = new this.ContourGeometry(volume[0][0][0][0], {
+                x: volume[0][4],
+                y: volume[0][3]
+              }, ignoreValue(data));
               var material = new THREE.MeshBasicMaterial({
                 opacity: result.opacity,
                 side: THREE.DoubleSide,
