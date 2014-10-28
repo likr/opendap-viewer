@@ -365,7 +365,7 @@ angular.module('opendap-viewer')
           var a = (s - s0) / (s1 - s0);
           var x = mix(p0[0], p1[0], a);
           var y = mix(p0[1], p1[1], a);
-          var z = - mix(p0[2], p1[2], a) / 60;
+          var z = mix(p0[2], p1[2], a);
           return new THREE.Vector3(x, y, z);
         }
       }

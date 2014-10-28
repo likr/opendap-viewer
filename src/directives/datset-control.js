@@ -35,6 +35,18 @@ function ignoreValue(data) {
 }
 
 
+function depthConverter(data) {
+  var sign = 1;
+  var keys = ['depth'];
+  if (keys.indexOf(data.attributes.long_name.toLowerCase()) >= 0) {
+    sign = -1;
+  }
+  return function(z) {
+    return sign * z / 60;
+  };
+}
+
+
 angular.module('opendap-viewer')
   .controller('DatasetController', class {
     constructor($modal, jqdap, scene, objects, ContourGeometry, IsosurfaceGeometry) {
@@ -69,6 +81,9 @@ angular.module('opendap-viewer')
                   isosurface: axes.length === 4,
                   pbr: axes.length === 4
                 };
+                data.x = dataset[data.array.dimensions[axes.length - 1]];
+                data.y = dataset[data.array.dimensions[axes.length - 2]];
+                data.z = dataset[data.array.dimensions[axes.length - 3]];
               }
             }
           }
@@ -90,7 +105,8 @@ angular.module('opendap-viewer')
         .then(volume => {
           var geometry = new this.ContourGeometry(volume[0][0][0], {
             x: volume[0][3],
-            y: volume[0][2]
+            y: volume[0][2],
+            z: -0.5
           }, ignoreValue(data));
           var material = new THREE.MeshBasicMaterial({
             vertexColors: THREE.VertexColors,
@@ -119,7 +135,8 @@ angular.module('opendap-viewer')
             .then(volume => {
               var geometry = new this.ContourGeometry(volume[0][0][0][0], {
                 x: volume[0][4],
-                y: volume[0][3]
+                y: volume[0][3],
+                z: depthConverter(data.z)(volume[0][2][0])
               }, ignoreValue(data));
               var material = new THREE.MeshBasicMaterial({
                 opacity: result.opacity,
@@ -148,11 +165,11 @@ angular.module('opendap-viewer')
         .result
         .then(result => {
           this.requestData(url)
-            .then(data => {
-              var geometry = new this.IsosurfaceGeometry(data[0][0][0], {
-                x: data[0][4],
-                y: data[0][3],
-                z: data[0][2],
+            .then(volume => {
+              var geometry = new this.IsosurfaceGeometry(volume[0][0][0], {
+                x: volume[0][4],
+                y: volume[0][3],
+                z: volume[0][2].map(depthConverter(data.z))
               }, result.isovalue);
               geometry.computeFaceNormals();
               geometry.computeVertexNormals();

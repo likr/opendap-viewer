@@ -24,10 +24,10 @@ angular.module('opendap-viewer')
           for (ix = 0; ix < nx - 1; ++ix) {
             var x0 = coordinates.x[ix];
             var x1 = coordinates.x[ix + 1];
-            this.vertices.push(new THREE.Vector3(x0, y0, -0.1));
-            this.vertices.push(new THREE.Vector3(x1, y0, -0.1));
-            this.vertices.push(new THREE.Vector3(x1, y1, -0.1));
-            this.vertices.push(new THREE.Vector3(x0, y1, -0.1));
+            this.vertices.push(new THREE.Vector3(x0, y0, coordinates.z));
+            this.vertices.push(new THREE.Vector3(x1, y0, coordinates.z));
+            this.vertices.push(new THREE.Vector3(x1, y1, coordinates.z));
+            this.vertices.push(new THREE.Vector3(x0, y1, coordinates.z));
             var color0 = new THREE.Color(color(plane[iy][ix]));
             var color1 = new THREE.Color(color(plane[iy][ix + 1]));
             var color2 = new THREE.Color(color(plane[iy + 1][ix + 1]));
