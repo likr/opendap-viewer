@@ -26,9 +26,12 @@ function axisUrl(data, index) {
 
 
 function ignoreValue(data) {
-  var value, key, keys = ['_fillValue', 'missing_value'];
+  var value, key, keys = ['_FillValue', '_fillValue', 'missing_value'];
   for (key of keys) {
     if ((value = data.attributes[key]) !== undefined) {
+      if (value === -9.99E33) {
+        return -9.989999710577421e+33;
+      }
       return value;
     }
   }
