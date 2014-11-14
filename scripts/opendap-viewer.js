@@ -370,7 +370,9 @@ var $__src_95_directives_47_datset_45_control__ = (function() {
   function depthConverter(data) {
     var sign = 1;
     var keys = ['depth'];
-    if (keys.indexOf(data.attributes.long_name.toLowerCase()) >= 0) {
+    if (keys.some((function(key) {
+      return data.attributes.long_name.toLowerCase().startsWith(key);
+    }))) {
       sign = -1;
     }
     return function(z) {
