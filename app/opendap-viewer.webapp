@@ -1,9 +1,9 @@
 {
   "name": "OPeNDAP Viewer",
   "description": "Integrated visualization system for OPeNDAP",
-  "launch_path": "/",
+  "launch_path": "/opendap-viewer/",
   "icons": {
-    "256": "/icon256.png"
+    "256": "/opendap-viewer/icon256.png"
   },
   "developer": {
     "name": "Yosuke Onoue",
