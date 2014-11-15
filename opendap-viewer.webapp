@@ -1,0 +1,13 @@
+{
+  "name": "OPeNDAP Viewer",
+  "description": "Integrated visualization system for OPeNDAP",
+  "launch_path": "/",
+  "icons": {
+    "256": "/icon256.png"
+  },
+  "developer": {
+    "name": "Yosuke Onoue",
+    "url": "http://www.likr-lab.com/"
+  },
+  "default_locale": "ja"
+}
