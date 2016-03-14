@@ -1,4 +1,9 @@
-angular.module('opendap-viewer')
+import angular from 'angular'
+import THREE from 'three'
+
+const modName = 'opendap-viewer.services.scene';
+
+angular.module(modName, [])
   .factory('scene', () => {
     var scene = new THREE.Scene();
     var light1 = new THREE.DirectionalLight(new THREE.Color('white'));
@@ -9,3 +14,5 @@ angular.module('opendap-viewer')
     scene.add(light2);
     return scene;
   });
+
+export default modName

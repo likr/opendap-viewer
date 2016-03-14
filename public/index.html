@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html ng-app="opendap-viewer">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=no">
+<title>Opendap Viewer</title>
+<link rel="stylesheet" href="vendor/bootstrap.min.css"/>
+<link rel="stylesheet" href="opendap-viewer.css"/>
+</head>
+<body ng-controller="MainController as main">
+<nav class="navbar navbar-default" id="header">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">Opendap Viewer</a>
+    </div>
+    <form class="navbar-form navbar-right">
+      <button class="btn btn-default" ng-click="main.toggleShowControl()">Control</button>
+    </form>
+  </div>
+</nav>
+<control ng-show="main.showControl"></control>
+<div id="contents">
+  <screen></screen>
+</div>
+<script src="vendor/jquery.min.js"></script>
+<script src="vendor/jquery-ui.min.js"></script>
+<script src="bundle.js"></script>
+</body>
+</html>

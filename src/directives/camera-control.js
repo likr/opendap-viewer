@@ -1,4 +1,9 @@
-angular.module('opendap-viewer')
+import angular from 'angular'
+import THREE from 'three'
+
+const modName = 'opendap-viewer.directives.camera';
+
+angular.module(modName, [])
   .controller('CameraController', class {
     constructor($scope, camera, target) {
       this.camera = camera;
@@ -47,6 +52,8 @@ angular.module('opendap-viewer')
     return {
       controller: 'CameraController as cameraCtl',
       restrict: 'E',
-      templateUrl: 'partials/directives/camera-control.html'
+      templateUrl: 'partials/directives/camera-control.html',
     };
   });
+
+export default modName

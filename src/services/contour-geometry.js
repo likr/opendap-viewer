@@ -1,8 +1,14 @@
-angular.module('opendap-viewer')
+import angular from 'angular'
+import THREE from 'three'
+import d3 from 'd3'
+
+const modName = 'opendap-viewer.services.contour-geometry';
+
+angular.module(modName, [])
   .factory('ContourGeometry', () => {
     return class extends THREE.Geometry {
       constructor(plane, coordinates, ignoreValue) {
-        THREE.Geometry.call(this);
+        super();
 
         var nx = coordinates.x.length;
         var ny = coordinates.y.length;
@@ -55,3 +61,5 @@ angular.module('opendap-viewer')
       }
     };
   });
+
+export default modName

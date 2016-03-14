@@ -1,4 +1,13 @@
-angular.module('opendap-viewer', ['ui.bootstrap', 'ngDragDrop']);
+import angular from 'angular'
+import THREE from 'three'
+import topojson from 'topojson'
+import uiBootstrapModule from 'angular-ui-bootstrap'
+import 'angular-dragdrop'
+import mainControllerModule from './controllers/main'
+import services from './services/index'
+import directives from './directives/index'
+
+angular.module('opendap-viewer', [uiBootstrapModule, 'ngDragDrop', mainControllerModule, services, directives]);
 
 angular.module('opendap-viewer')
   .run(($http, scene) => {

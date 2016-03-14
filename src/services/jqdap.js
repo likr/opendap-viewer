@@ -1,13 +1,20 @@
-angular.module('opendap-viewer')
-  .factory('jqdap', ($window, $q) => {
+import angular from 'angular'
+import vdap from 'vdap'
+
+const modName = 'opendap-viewer.services.jqdap';
+
+angular.module(modName, [])
+  .factory('jqdap', ($q) => {
     return {
       loadDataset: (url, options) => {
-        options.withCredentials = true;
-        return $q.when($window.jqdap.loadDataset(url, options));
+        options.credentials = 'include';
+        return $q.when(vdap.loadDataset(url, options));
       },
       loadData: (url, options) => {
-        options.withCredentials = true;
-        return $q.when($window.jqdap.loadData(url, options));
-      }
+        options.credentials = 'include';
+        return $q.when(vdap.loadData(url, options));
+      },
     };
   });
+
+export default modName

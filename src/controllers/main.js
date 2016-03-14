@@ -1,4 +1,8 @@
-angular.module('opendap-viewer')
+import angular from 'angular'
+
+const modName = 'opendap-viewer.controllers.main-controller'
+
+angular.module(modName, [])
   .controller('MainController', class MainController {
     constructor() {
       this.showControl = true;
@@ -9,3 +13,5 @@ angular.module('opendap-viewer')
       this.showControl = !this.showControl;
     }
   });
+
+export default modName

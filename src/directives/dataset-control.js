@@ -1,14 +1,19 @@
+import angular from 'angular'
+import THREE from 'three'
+
+const modName = 'opendap-viewer.directives.dataset-control';
+
 function parseUrl(url) {
   var match = url.match(/(\w+):\/\/(\w+):(\w+)@(.+)/);
   if (match) {
     return {
       url: `${match[1]}://${match[4]}`,
       username: match[2],
-      password: match[3]
+      password: match[3],
     };
   } else {
     return {
-      url: url
+      url: url,
     };
   }
 }
@@ -50,10 +55,10 @@ function depthConverter(data) {
 }
 
 
-angular.module('opendap-viewer')
+angular.module(modName, [])
   .controller('DatasetController', class {
-    constructor($modal, jqdap, scene, objects, ContourGeometry, IsosurfaceGeometry) {
-      this.$modal = $modal;
+    constructor($uibModal, jqdap, scene, objects, ContourGeometry, IsosurfaceGeometry) {
+      this.$modal = $uibModal;
       this.jqdap = jqdap;
       this.scene = scene;
       this.objects = objects;
@@ -74,7 +79,7 @@ angular.module('opendap-viewer')
               data.url = url;
               if (data.type === 'Grid') {
                 this.grid.push(data);
-                data.query = data.array.shape.map((shape, i) => {
+                data.query = data.array.shape.map((shape) => {
                   return `0:1:${shape - 1}`;
                 });
                 axes = data.array.dimensions;
@@ -82,7 +87,7 @@ angular.module('opendap-viewer')
                   contour2d: axes.length == 3,
                   contour3d: axes.length == 4,
                   isosurface: axes.length === 4,
-                  pbr: axes.length === 4
+                  pbr: axes.length === 4,
                 };
                 data.x = dataset[data.array.dimensions[axes.length - 1]];
                 data.y = dataset[data.array.dimensions[axes.length - 2]];
@@ -109,7 +114,7 @@ angular.module('opendap-viewer')
           var geometry = new this.ContourGeometry(volume[0][0][0], {
             x: volume[0][3],
             y: volume[0][2],
-            z: -0.5
+            z: -0.5,
           }, ignoreValue(data));
           var material = new THREE.MeshBasicMaterial({
             vertexColors: THREE.VertexColors,
@@ -120,7 +125,7 @@ angular.module('opendap-viewer')
           this.objects.push({
             name: url,
             mesh: mesh,
-            show: true
+            show: true,
           });
         });
     }
@@ -130,7 +135,7 @@ angular.module('opendap-viewer')
       this.$modal
         .open({
           controller: 'OpacityDialogController as opacityCtl',
-          templateUrl:'partials/dialogs/opacity.html'
+          templateUrl:'partials/dialogs/opacity.html',
         })
         .result
         .then(result => {
@@ -139,7 +144,7 @@ angular.module('opendap-viewer')
               var geometry = new this.ContourGeometry(volume[0][0][0][0], {
                 x: volume[0][4],
                 y: volume[0][3],
-                z: depthConverter(data.z)(volume[0][2][0])
+                z: depthConverter(data.z)(volume[0][2][0]),
               }, ignoreValue(data));
               var material = new THREE.MeshBasicMaterial({
                 opacity: result.opacity,
@@ -152,7 +157,7 @@ angular.module('opendap-viewer')
               this.objects.push({
                 name: url,
                 mesh: mesh,
-                show: true
+                show: true,
               });
             });
         });
@@ -172,7 +177,7 @@ angular.module('opendap-viewer')
               var geometry = new this.IsosurfaceGeometry(volume[0][0][0], {
                 x: volume[0][4],
                 y: volume[0][3],
-                z: volume[0][2].map(depthConverter(data.z))
+                z: volume[0][2].map(depthConverter(data.z)),
               }, result.isovalue);
               geometry.computeFaceNormals();
               geometry.computeVertexNormals();
@@ -185,7 +190,7 @@ angular.module('opendap-viewer')
               this.objects.push({
                 name: url,
                 mesh: mesh,
-                show: true
+                show: true,
               });
             });
         });
@@ -203,7 +208,7 @@ angular.module('opendap-viewer')
                   deferred.resolve(data[0]);
                 });
               return deferred.promise;
-            }
+            },
           },
           templateUrl: 'partials/dialogs/query.html',
         })
@@ -234,8 +239,8 @@ angular.module('opendap-viewer')
     }
   })
   .controller('OpacityDialogController', class {
-    constructor($modalInstance) {
-      this.$modalInstance = $modalInstance;
+    constructor($uibModalInstance) {
+      this.$modalInstance = $uibModalInstance;
       this.opacity = 1;
     }
 
@@ -250,8 +255,8 @@ angular.module('opendap-viewer')
     }
   })
   .controller('IsovalueDialogController', class {
-    constructor($modalInstance) {
-      this.$modalInstance = $modalInstance;
+    constructor($uibModalInstance) {
+      this.$modalInstance = $uibModalInstance;
       this.isovalue = 34;
       this.color = '#ff0000';
     }
@@ -268,8 +273,8 @@ angular.module('opendap-viewer')
     }
   })
   .controller('QueryDialogController', class {
-    constructor($modalInstance, values) {
-      this.$modalInstance = $modalInstance;
+    constructor($uibModalInstance, values) {
+      this.$modalInstance = $uibModalInstance;
       this.values = values;
       this.from = values[0];
       this.to = values[values.length - 1];
@@ -280,7 +285,7 @@ angular.module('opendap-viewer')
       this.$modalInstance.close({
         from: this.values.indexOf(this.from),
         to: this.values.indexOf(this.to),
-        step: this.step
+        step: this.step,
       });
     }
 
@@ -295,3 +300,5 @@ angular.module('opendap-viewer')
       templateUrl: 'partials/directives/dataset-control.html',
     };
   });
+
+export default modName

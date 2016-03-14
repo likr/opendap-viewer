@@ -1,7 +1,13 @@
-angular.module('opendap-viewer')
+import angular from 'angular'
+import THREE from 'three'
+import TrackballControls from 'three.trackball'
+
+const modName = 'opendap-viewer.directives.screen';
+
+angular.module(modName, [])
   .directive('screen', ($window, jqdap, scene, camera, target) => {
     return {
-      link: (scope, element, attributes) => {
+      link: (scope, element) => {
         var width = element.width();
         var height = element.height();
 
@@ -14,7 +20,7 @@ angular.module('opendap-viewer')
         renderer.setSize(width, height);
         element[0].appendChild(renderer.domElement);
 
-        var trackball = new THREE.TrackballControls(camera, renderer.domElement);
+        var trackball = new TrackballControls(camera, renderer.domElement);
         trackball.staticMoving = true;
         trackball.rotateSpeed = 3;
         trackball.radius = 500;
@@ -22,7 +28,7 @@ angular.module('opendap-viewer')
 
         render();
 
-        $($window).resize(() => {
+        $window.addEventListener('resize', () => {
           var width = element.width();
           var height = element.height();
 
@@ -42,3 +48,5 @@ angular.module('opendap-viewer')
       restrict: 'E',
     };
   });
+
+export default modName

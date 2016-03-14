@@ -1,3 +1,8 @@
+import angular from 'angular'
+import THREE from 'three'
+
+const modName = 'opendap-viewer.services.isosurface-geometry';
+
 var edgeID = [
   [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
   [0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
@@ -254,7 +259,7 @@ var edgeID = [
   [1, 3, 8, 9, 1, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
   [0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
   [0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
-  [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+  [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
 ];
 
 var vertexID = [
@@ -269,7 +274,7 @@ var vertexID = [
     [ [ 0, 0, 0 ], [ 0, 0, 1 ] ],
     [ [ 1, 0, 0 ], [ 1, 0, 1 ] ],
     [ [ 1, 1, 0 ], [ 1, 1, 1 ] ],
-    [ [ 0, 1, 0 ], [ 0, 1, 1 ] ]
+    [ [ 0, 1, 0 ], [ 0, 1, 1 ] ],
 ];
 
 
@@ -278,11 +283,11 @@ function mix(x, y, a) {
 }
 
 
-angular.module('opendap-viewer')
+angular.module(modName, [])
   .factory('IsosurfaceGeometry', () => {
     return class extends THREE.Geometry {
       constructor(volume, coordinates, isovalue) {
-        THREE.Geometry.call(this);
+        super();
 
         var nx = coordinates.x.length;
         var ny = coordinates.y.length;
@@ -312,20 +317,20 @@ angular.module('opendap-viewer')
                   vertexID[eid1][0],
                   vertexID[eid1][1],
                   vertexID[eid2][0],
-                  vertexID[eid2][1]
+                  vertexID[eid2][1],
                 ];
                 var v = vid.map(vidi => {
                   return [
                     vidi[0] ? ix + 1 : ix,
                     vidi[1] ? iy + 1 : iy,
-                    vidi[2] ? iz + 1 : iz
+                    vidi[2] ? iz + 1 : iz,
                   ];
                 });
                 var p = vid.map(vidi => {
                   return [
                     vidi[0] ? x1 : x0,
                     vidi[1] ? y1 : y0,
-                    vidi[2] ? z1 : z0
+                    vidi[2] ? z1 : z0,
                   ];
                 });
                 this.vertices.push(interpolated_vertex(v[0], v[1], p[0], p[1], isovalue));
@@ -371,3 +376,5 @@ angular.module('opendap-viewer')
       }
     };
   });
+
+export default modName

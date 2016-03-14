@@ -1,4 +1,8 @@
-angular.module('opendap-viewer')
+import angular from 'angular'
+
+const modName = 'opendap-viewer.directives.object-control';
+
+angular.module(modName, [])
   .controller('ObjectController', class {
     constructor(scene, objects) {
       this.scene = scene;
@@ -20,3 +24,5 @@ angular.module('opendap-viewer')
       templateUrl: 'partials/directives/object-control.html',
     };
   });
+
+export default modName
