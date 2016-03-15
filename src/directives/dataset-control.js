@@ -4,15 +4,16 @@ import THREE from 'three'
 const modName = 'opendap-viewer.directives.dataset-control';
 
 const volumeAverage = (volume, ignoreValue) => {
-  const nx = volume[0][4].length;
-  const ny = volume[0][3].length;
-  const nz = volume[0][2].length;
+  const nx = volume[0].length === 5 ? volume[0][4].length : volume[0][3].length;
+  const ny = volume[0].length === 5 ? volume[0][3].length : volume[0][2].length;
+  const nz = volume[0].length === 5 ? volume[0][2].length : volume[0][1].length;
+  const data = volume[0].length === 5 ? volume[0][0][0] : volume[0][0];
   let val = 0;
   let count = 0;
   for (let z = 0; z < nz; ++z) {
     for (let y = 0; y < ny; ++y) {
       for (let x = 0; x < nx; ++x) {
-        const value = volume[0][0][0][z][y][x];
+        const value = data[z][y][x];
         if (value !== ignoreValue) {
           val += value;
           count += 1;
@@ -113,11 +114,22 @@ angular.module(modName, [])
                   return `0:10:${shape - 1}`;
                 });
                 axes = data.array.dimensions;
-                data.draw = {
-                  contour2d: axes.length === 3,
-                  contour3d: axes.length === 4,
-                  isosurface: axes.length === 4,
-                };
+                data.draw = {};
+                if (axes.indexOf('time') >= 0) {
+                  if (axes.indexOf('depth') >= 0) {
+                    data.draw.contour3DT = true;
+                    data.draw.isosurface3DT = true;
+                  } else {
+                    data.draw.contour2DT = true;
+                  }
+                } else {
+                  if (axes.indexOf('depth') >= 0) {
+                    data.draw.contour3D = true;
+                    data.draw.isosurface3D = true;
+                  } else {
+                    data.draw.contour2D = true;
+                  }
+                }
                 data.x = dataset[data.array.dimensions[axes.length - 1]];
                 data.y = dataset[data.array.dimensions[axes.length - 2]];
                 data.z = dataset[data.array.dimensions[axes.length - 3]];
@@ -128,29 +140,46 @@ angular.module(modName, [])
     }
 
     drawContour2D(data) {
-      var url = queryUrl(data);
-      this.requestData(url)
-        .then(volume => {
-          var geometry = new this.ContourGeometry(volume[0][0][0], {
-            x: volume[0][3],
-            y: volume[0][2],
-            z: -0.5,
-          }, ignoreValue(data));
-          var material = new THREE.MeshBasicMaterial({
-            vertexColors: THREE.VertexColors,
-            side: THREE.DoubleSide,
-          });
-          var mesh = new THREE.Mesh(geometry, material);
-          this.scene.add(mesh);
-          this.objects.push({
-            name: url,
-            mesh: mesh,
-            show: true,
-          });
-        });
+      this.drawContour(data, (volume) => {
+        return new this.ContourGeometry(volume[0][0], {
+          x: volume[0][2],
+          y: volume[0][1],
+          z: -0.5,
+        }, ignoreValue(data));
+      });
+    }
+
+    drawContour2DT(data) {
+      this.drawContour(data, (volume) => {
+        return new this.ContourGeometry(volume[0][0][0], {
+          x: volume[0][3],
+          y: volume[0][2],
+          z: -0.5,
+        }, ignoreValue(data));
+      });
     }
 
     drawContour3D(data) {
+      this.drawContour(data, (volume) => {
+        return new this.ContourGeometry(volume[0][0][0], {
+          x: volume[0][3],
+          y: volume[0][2],
+          z: depthConverter(data.z)(volume[0][1][0]),
+        }, ignoreValue(data));
+      });
+    }
+
+    drawContour3DT(data) {
+      this.drawContour(data, (volume) => {
+        return new this.ContourGeometry(volume[0][0][0][0], {
+          x: volume[0][4],
+          y: volume[0][3],
+          z: depthConverter(data.z)(volume[0][2][0]),
+        }, ignoreValue(data));
+      });
+    }
+
+    drawContour(data, f) {
       var url = queryUrl(data);
       this.$modal
         .open({
@@ -161,11 +190,7 @@ angular.module(modName, [])
         .then(result => {
           this.requestData(url)
             .then(volume => {
-              var geometry = new this.ContourGeometry(volume[0][0][0][0], {
-                x: volume[0][4],
-                y: volume[0][3],
-                z: depthConverter(data.z)(volume[0][2][0]),
-              }, ignoreValue(data));
+              var geometry = f(volume);
               var material = new THREE.MeshBasicMaterial({
                 opacity: result.opacity,
                 side: THREE.DoubleSide,
@@ -183,7 +208,27 @@ angular.module(modName, [])
         });
     }
 
-    drawIsosurface(data) {
+    drawIsosurface3D(data) {
+      this.drawIsosurface(data, (volume, isovalue) => {
+        return new this.IsosurfaceGeometry(volume[0][0], {
+          x: volume[0][3],
+          y: volume[0][2],
+          z: volume[0][1].map(depthConverter(data.z)),
+        }, isovalue);
+      });
+    }
+
+    drawIsosurface3DT(data) {
+      this.drawIsosurface(data, (volume, isovalue) => {
+        return new this.IsosurfaceGeometry(volume[0][0][0], {
+          x: volume[0][4],
+          y: volume[0][3],
+          z: volume[0][2].map(depthConverter(data.z)),
+        }, isovalue);
+      });
+    }
+
+    drawIsosurface(data, f) {
       var url = queryUrl(data);
       this.requestData(url)
         .then((volume) => {
@@ -199,11 +244,7 @@ angular.module(modName, [])
             .result;
         })
         .then((result) => {
-          var geometry = new this.IsosurfaceGeometry(result.volume[0][0][0], {
-            x: result.volume[0][4],
-            y: result.volume[0][3],
-            z: result.volume[0][2].map(depthConverter(data.z)),
-          }, result.isovalue);
+          var geometry = f(result.volume, result.isovalue);
           geometry.computeFaceNormals();
           geometry.computeVertexNormals();
           var material = new THREE.MeshLambertMaterial({
