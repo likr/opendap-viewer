@@ -3,6 +3,26 @@ import THREE from 'three'
 
 const modName = 'opendap-viewer.directives.dataset-control';
 
+const volumeAverage = (volume, ignoreValue) => {
+  const nx = volume[0][4].length;
+  const ny = volume[0][3].length;
+  const nz = volume[0][2].length;
+  let val = 0;
+  let count = 0;
+  for (let z = 0; z < nz; ++z) {
+    for (let y = 0; y < ny; ++y) {
+      for (let x = 0; x < nx; ++x) {
+        const value = volume[0][0][0][z][y][x];
+        if (value !== ignoreValue) {
+          val += value;
+          count += 1;
+        }
+      }
+    }
+  }
+  return val / count;
+};
+
 function parseUrl(url) {
   var match = url.match(/(\w+):\/\/(\w+):(\w+)@(.+)/);
   if (match) {
@@ -172,34 +192,38 @@ angular.module(modName, [])
 
     drawIsosurface(data) {
       var url = queryUrl(data);
-      this.$modal
-        .open({
-          controller: 'IsovalueDialogController as isovalueCtl',
-          templateUrl: 'partials/dialogs/isovalue.html',
+      this.requestData(url)
+        .then((volume) => {
+          return this.$modal
+            .open({
+              controller: 'IsovalueDialogController as isovalueCtl',
+              templateUrl: 'partials/dialogs/isovalue.html',
+              resolve: {
+                volume: () => volume,
+                ignoreValue: () => ignoreValue(data),
+              },
+            })
+            .result;
         })
-        .result
-        .then(result => {
-          this.requestData(url)
-            .then(volume => {
-              var geometry = new this.IsosurfaceGeometry(volume[0][0][0], {
-                x: volume[0][4],
-                y: volume[0][3],
-                z: volume[0][2].map(depthConverter(data.z)),
-              }, result.isovalue);
-              geometry.computeFaceNormals();
-              geometry.computeVertexNormals();
-              var material = new THREE.MeshLambertMaterial({
-                color: new THREE.Color(result.color),
-                side: THREE.DoubleSide,
-              });
-              var mesh = new THREE.Mesh(geometry, material);
-              this.scene.add(mesh);
-              this.objects.push({
-                name: url,
-                mesh: mesh,
-                show: true,
-              });
-            });
+        .then((result) => {
+          var geometry = new this.IsosurfaceGeometry(result.volume[0][0][0], {
+            x: result.volume[0][4],
+            y: result.volume[0][3],
+            z: result.volume[0][2].map(depthConverter(data.z)),
+          }, result.isovalue);
+          geometry.computeFaceNormals();
+          geometry.computeVertexNormals();
+          var material = new THREE.MeshLambertMaterial({
+            color: new THREE.Color(result.color),
+            side: THREE.DoubleSide,
+          });
+          var mesh = new THREE.Mesh(geometry, material);
+          this.scene.add(mesh);
+          this.objects.push({
+            name: url,
+            mesh: mesh,
+            show: true,
+          });
         });
     }
 
@@ -262,16 +286,18 @@ angular.module(modName, [])
     }
   })
   .controller('IsovalueDialogController', class {
-    constructor($uibModalInstance) {
+    constructor($uibModalInstance, volume, ignoreValue) {
       this.$modalInstance = $uibModalInstance;
-      this.isovalue = 34;
+      this.isovalue = volumeAverage(volume, ignoreValue);
       this.color = '#ff0000';
+      this.volume = volume;
     }
 
     ok() {
       this.$modalInstance.close({
         isovalue: +this.isovalue,
         color: this.color,
+        volume: this.volume,
       });
     }
 
