@@ -4,9 +4,8 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=no">
 <title>Opendap Viewer</title>
-<link rel="apple-touch-icon-precomposed" href="images/icon.png"/>
-<link rel="stylesheet" href="styles/lib/bootstrap.min.css"/>
-<link rel="stylesheet" href="styles/opendap-viewer.css"/>
+<link rel="stylesheet" href="vendor/bootstrap.min.css"/>
+<link rel="stylesheet" href="opendap-viewer.css"/>
 </head>
 <body ng-controller="MainController as main">
 <nav class="navbar navbar-default" id="header">
@@ -23,20 +22,8 @@
 <div id="contents">
   <screen></screen>
 </div>
-<script src="scripts/lib/traceur-runtime.min.js"></script>
-<script src="scripts/lib/jquery.min.js"></script>
-<script src="scripts/lib/jquery-ui.min.js"></script>
-<script src="scripts/lib/jquery.ui.touch-punch.min.js"></script>
-<script src="scripts/lib/bootstrap.min.js"></script>
-<script src="scripts/lib/angular.min.js"></script>
-<script src="scripts/lib/angular-dragdrop.min.js"></script>
-<script src="scripts/lib/ui-bootstrap.min.js"></script>
-<script src="scripts/lib/ui-bootstrap-tpls.min.js"></script>
-<script src="scripts/lib/d3.min.js"></script>
-<script src="scripts/lib/topojson.js"></script>
-<script src="scripts/lib/three.min.js"></script>
-<script src="scripts/lib/TrackballControls.js"></script>
-<script src="scripts/lib/jqdap.js"></script>
-<script src="scripts/opendap-viewer.js"></script>
+<script src="vendor/jquery.min.js"></script>
+<script src="vendor/jquery-ui.min.js"></script>
+<script src="bundle.js"></script>
 </body>
 </html>
