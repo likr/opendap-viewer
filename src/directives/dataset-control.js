@@ -34,10 +34,9 @@ function ignoreValue(data) {
   var value, key, keys = ['_FillValue', '_fillValue', 'missing_value'];
   for (key of keys) {
     if ((value = data.attributes[key]) !== undefined) {
-      if (value === -9.99E33) {
-        return -9.989999710577421e+33;
-      }
-      return value;
+      const buf = new Float32Array(1);
+      buf[0] = value;
+      return buf[0];
     }
   }
 }
@@ -46,8 +45,16 @@ function ignoreValue(data) {
 function depthConverter(data) {
   var sign = 1;
   var keys = ['depth'];
-  if (keys.some((key) => data.attributes.long_name.toLowerCase().startsWith(key))) {
-    sign = -1;
+
+  for (const key of keys) {
+    if (data.attributes.standard_name && data.attributes.standard_name.toLowerCase().startsWith(key)) {
+      sign = -1;
+      break;
+    }
+    if (data.attributes.long_name && data.attributes.long_name.toLowerCase().startsWith(key)) {
+      sign = -1;
+      break;
+    }
   }
   return function(z) {
     return sign * z / 60;

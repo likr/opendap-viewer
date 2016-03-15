@@ -71,7 +71,7 @@ control .control-contents {
   height: 600px;
 }
 .dataset {
-  overflow-x: hidden;
+  overflow-x: scroll;
   overflow-y: scroll;
   height: 300px;
   margin-top: 20px;
