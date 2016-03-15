@@ -10,40 +10,43 @@ angular.module(modName, [])
       constructor(plane, coordinates, ignoreValue) {
         super();
 
-        var nx = coordinates.x.length;
-        var ny = coordinates.y.length;
+        const nx = coordinates.x.length;
+        const ny = coordinates.y.length;
 
-        var extents = plane.map(row => {
+        const extents = plane.map(row => {
           return d3.extent(row.filter(v => v !== ignoreValue));
         });
-        var min = d3.min(extents, d => d[0]);
-        var max = d3.max(extents, d => d[1]);
-        var scale = d3.scale.linear()
+        const min = d3.min(extents, d => d[0]);
+        const max = d3.max(extents, d => d[1]);
+        const scale = d3.scale.linear()
           .domain([min, max])
           .range([240, 0]);
+        const lonScale = (x) => x > 180 ? x - 360 : x;
 
-        var ix, iy;
-        var vertexIndex = 0;
-        for (iy = 0; iy < ny - 1; ++iy) {
-          var y0 = coordinates.y[iy];
-          var y1 = coordinates.y[iy + 1];
-          for (ix = 0; ix < nx - 1; ++ix) {
-            var x0 = coordinates.x[ix];
-            var x1 = coordinates.x[ix + 1];
+        let vertexIndex = 0;
+        for (let iy = 0; iy < ny - 1; ++iy) {
+          const y0 = coordinates.y[iy];
+          const y1 = coordinates.y[iy + 1];
+          for (let ix = 0; ix < nx - 1; ++ix) {
+            const x0 = lonScale(coordinates.x[ix]);
+            const x1 = lonScale(coordinates.x[ix + 1]);
+            if (x0 > x1) {
+              continue;
+            }
             this.vertices.push(new THREE.Vector3(x0, y0, coordinates.z));
             this.vertices.push(new THREE.Vector3(x1, y0, coordinates.z));
             this.vertices.push(new THREE.Vector3(x1, y1, coordinates.z));
             this.vertices.push(new THREE.Vector3(x0, y1, coordinates.z));
-            var color0 = new THREE.Color(color(plane[iy][ix]));
-            var color1 = new THREE.Color(color(plane[iy][ix + 1]));
-            var color2 = new THREE.Color(color(plane[iy + 1][ix + 1]));
-            var color3 = new THREE.Color(color(plane[iy + 1][ix]));
-            var face1 = new THREE.Face3(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+            const color0 = new THREE.Color(color(plane[iy][ix]));
+            const color1 = new THREE.Color(color(plane[iy][ix + 1]));
+            const color2 = new THREE.Color(color(plane[iy + 1][ix + 1]));
+            const color3 = new THREE.Color(color(plane[iy + 1][ix]));
+            const face1 = new THREE.Face3(vertexIndex, vertexIndex + 1, vertexIndex + 2);
             face1.vertexColors[0] = color0;
             face1.vertexColors[1] = color1;
             face1.vertexColors[2] = color2;
             this.faces.push(face1);
-            var face2 = new THREE.Face3(vertexIndex, vertexIndex + 2, vertexIndex + 3);
+            const face2 = new THREE.Face3(vertexIndex, vertexIndex + 2, vertexIndex + 3);
             face2.vertexColors[0] = color0;
             face2.vertexColors[1] = color2;
             face2.vertexColors[2] = color3;

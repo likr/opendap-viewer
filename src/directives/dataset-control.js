@@ -248,7 +248,7 @@ angular.module(modName, [])
   .controller('OpacityDialogController', class {
     constructor($uibModalInstance) {
       this.$modalInstance = $uibModalInstance;
-      this.opacity = 1;
+      this.opacity = 0.5;
     }
 
     ok() {
