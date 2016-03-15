@@ -106,15 +106,17 @@ angular.module(modName, [])
               data.url = url;
               if (data.type === 'Grid') {
                 this.grid.push(data);
-                data.query = data.array.shape.map((shape) => {
-                  return `0:1:${shape - 1}`;
+                data.query = data.array.shape.map((shape, i) => {
+                  if (data.array.dimensions[i].toLowerCase() === 'time') {
+                    return '0';
+                  }
+                  return `0:10:${shape - 1}`;
                 });
                 axes = data.array.dimensions;
                 data.draw = {
-                  contour2d: axes.length == 3,
-                  contour3d: axes.length == 4,
+                  contour2d: axes.length === 3,
+                  contour3d: axes.length === 4,
                   isosurface: axes.length === 4,
-                  pbr: axes.length === 4,
                 };
                 data.x = dataset[data.array.dimensions[axes.length - 1]];
                 data.y = dataset[data.array.dimensions[axes.length - 2]];
@@ -122,15 +124,6 @@ angular.module(modName, [])
               }
             }
           }
-        });
-    }
-
-    draw(data) {
-      var url = queryUrl(data);
-      console.log(url, data);
-      this.requestData(url)
-        .then(data => {
-          console.log(data);
         });
     }
 
@@ -228,25 +221,39 @@ angular.module(modName, [])
     }
 
     inputQuery(data, index) {
-      this.$modal
-        .open({
-          controller: 'QueryDialogController as queryCtl',
-          resolve: {
-            values: $q => {
-              var deferred = $q.defer();
-              this.requestData(axisUrl(data, index))
-                .then(data => {
-                  deferred.resolve(data[0]);
-                });
-              return deferred.promise;
-            },
-          },
-          templateUrl: 'partials/dialogs/query.html',
-        })
-        .result
-        .then(result => {
-          data.query[index] = `${result.from}:${result.step}:${result.to}`;
-        });
+      const resolve = {
+        values: $q => {
+          var deferred = $q.defer();
+          this.requestData(axisUrl(data, index))
+            .then(data => {
+              deferred.resolve(data[0]);
+            });
+          return deferred.promise;
+        },
+      };
+      if (data.array.dimensions[index].toLowerCase() === 'time') {
+        this.$modal
+          .open({
+            controller: 'QuerySelectDialogController as queryCtl',
+            templateUrl: 'partials/dialogs/query-select.html',
+            resolve,
+          })
+          .result
+          .then(result => {
+            data.query[index] = result.index;
+          });
+      } else {
+        this.$modal
+          .open({
+            controller: 'QueryDialogController as queryCtl',
+            templateUrl: 'partials/dialogs/query.html',
+            resolve,
+          })
+          .result
+          .then(result => {
+            data.query[index] = `${result.from}:${result.step}:${result.to}`;
+          });
+      }
     }
 
     requestData(url) {
@@ -319,6 +326,23 @@ angular.module(modName, [])
         from: this.values.indexOf(this.from),
         to: this.values.indexOf(this.to),
         step: this.step,
+      });
+    }
+
+    cancel() {
+      this.$modalInstance.dismiss('cancel');
+    }
+  })
+  .controller('QuerySelectDialogController', class {
+    constructor($uibModalInstance, values) {
+      this.$modalInstance = $uibModalInstance;
+      this.values = values;
+      this.index = values[0];
+    }
+
+    ok() {
+      this.$modalInstance.close({
+        index: this.values.indexOf(this.index),
       });
     }
 
