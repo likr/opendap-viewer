@@ -9,6 +9,7 @@
     "angular": "^1.5.0",
     "angular-dragdrop": "^1.0.13",
     "angular-ui-bootstrap": "^1.2.4",
+    "d3": "^3.5.16",
     "three.js": "^0.73.2",
     "three.trackball": "0.0.1",
     "topojson": "^1.6.24",
