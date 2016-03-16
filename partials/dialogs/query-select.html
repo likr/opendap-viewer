@@ -1,0 +1,15 @@
+<div class="modal-header">
+  <h3 class="modal-title">Input index</h3>
+</div>
+<div class="modal-body">
+  <form>
+    <div class="form-group">
+      <label>Index</label>
+      <select class="form-control" ng-model="queryCtl.index" ng-options="value for value in queryCtl.values"></select>
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-click="queryCtl.ok()">OK</button>
+  <button class="btn btn-warning" ng-click="queryCtl.cancel()">Cancel</button>
+</div>

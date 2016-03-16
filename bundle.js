@@ -75291,15 +75291,20 @@
 	        return d[1];
 	      });
 	      var scale = _d2.default.scale.linear().domain([min, max]).range([240, 0]);
+	      var lonScale = function lonScale(x) {
+	        return x > 180 ? x - 360 : x;
+	      };
 
-	      var ix, iy;
 	      var vertexIndex = 0;
-	      for (iy = 0; iy < ny - 1; ++iy) {
+	      for (var iy = 0; iy < ny - 1; ++iy) {
 	        var y0 = coordinates.y[iy];
 	        var y1 = coordinates.y[iy + 1];
-	        for (ix = 0; ix < nx - 1; ++ix) {
-	          var x0 = coordinates.x[ix];
-	          var x1 = coordinates.x[ix + 1];
+	        for (var ix = 0; ix < nx - 1; ++ix) {
+	          var x0 = lonScale(coordinates.x[ix]);
+	          var x1 = lonScale(coordinates.x[ix + 1]);
+	          if (x0 > x1) {
+	            continue;
+	          }
 	          _this.vertices.push(new _three2.default.Vector3(x0, y0, coordinates.z));
 	          _this.vertices.push(new _three2.default.Vector3(x1, y0, coordinates.z));
 	          _this.vertices.push(new _three2.default.Vector3(x1, y1, coordinates.z));
@@ -86646,34 +86651,18 @@
 
 	    this.camera = camera;
 	    this.target = target;
-	    this.latFrom = -90;
-	    this.latTo = 90;
-	    this.lonFrom = -180;
-	    this.lonTo = 180;
+	    this.latCenter = 0;
+	    this.lonCenter = 0;
 
 	    $scope.$watch(function () {
-	      return _this.latFrom;
+	      return _this.latCenter;
 	    }, function (oldValue, newValue) {
 	      if (oldValue !== newValue) {
 	        _this.resetCamera();
 	      }
 	    });
 	    $scope.$watch(function () {
-	      return _this.latTo;
-	    }, function (oldValue, newValue) {
-	      if (oldValue !== newValue) {
-	        _this.resetCamera();
-	      }
-	    });
-	    $scope.$watch(function () {
-	      return _this.lonFrom;
-	    }, function (oldValue, newValue) {
-	      if (oldValue !== newValue) {
-	        _this.resetCamera();
-	      }
-	    });
-	    $scope.$watch(function () {
-	      return _this.lonTo;
+	      return _this.lonCenter;
 	    }, function (oldValue, newValue) {
 	      if (oldValue !== newValue) {
 	        _this.resetCamera();
@@ -86684,16 +86673,10 @@
 	  _createClass(_class, [{
 	    key: 'resetCamera',
 	    value: function resetCamera() {
-	      var width = this.latTo - this.latFrom;
-	      var height = this.lonTo - this.lonFrom;
-	      var size = Math.max(width, height / this.camera.aspect);
-	      var centerX = (this.lonTo + this.lonFrom) / 2;
-	      var centerY = (this.latTo + this.latFrom) / 2;
-	      var theta = this.camera.fov;
-	      this.camera.position.set(centerX, centerY, size / 2 / Math.tan(Math.PI * theta / 360));
-	      this.camera.lookAt(new _three2.default.Vector3(centerX, centerY, 0));
+	      this.camera.position.set(this.lonCenter, this.latCenter, this.camera.position.z);
+	      this.camera.lookAt(new _three2.default.Vector3(this.lonCenter, this.latCenter, 0));
 	      this.camera.updateProjectionMatrix();
-	      this.target.set(centerX, centerY, 0);
+	      this.target.set(this.lonCenter, this.latCenter, 0);
 	    }
 	  }]);
 
@@ -86734,6 +86717,27 @@
 
 	var modName = 'opendap-viewer.directives.dataset-control';
 
+	var volumeAverage = function volumeAverage(volume, ignoreValue) {
+	  var nx = volume[0].length === 5 ? volume[0][4].length : volume[0][3].length;
+	  var ny = volume[0].length === 5 ? volume[0][3].length : volume[0][2].length;
+	  var nz = volume[0].length === 5 ? volume[0][2].length : volume[0][1].length;
+	  var data = volume[0].length === 5 ? volume[0][0][0] : volume[0][0];
+	  var val = 0;
+	  var count = 0;
+	  for (var z = 0; z < nz; ++z) {
+	    for (var y = 0; y < ny; ++y) {
+	      for (var x = 0; x < nx; ++x) {
+	        var value = data[z][y][x];
+	        if (value !== ignoreValue) {
+	          val += value;
+	          count += 1;
+	        }
+	      }
+	    }
+	  }
+	  return val / count;
+	};
+
 	function parseUrl(url) {
 	  var match = url.match(/(\w+):\/\/(\w+):(\w+)@(.+)/);
 	  if (match) {
@@ -86760,7 +86764,7 @@
 	  return data.url + '.dods?' + data.array.dimensions[index];
 	}
 
-	function ignoreValue(data) {
+	function _ignoreValue(data) {
 	  var value,
 	      key,
 	      keys = ['_FillValue', '_fillValue', 'missing_value'];
@@ -86863,16 +86867,29 @@
 	            data.url = url;
 	            if (data.type === 'Grid') {
 	              _this.grid.push(data);
-	              data.query = data.array.shape.map(function (shape) {
-	                return '0:1:' + (shape - 1);
+	              data.query = data.array.shape.map(function (shape, i) {
+	                if (data.array.dimensions[i].toLowerCase() === 'time') {
+	                  return '0';
+	                }
+	                return '0:10:' + (shape - 1);
 	              });
 	              axes = data.array.dimensions;
-	              data.draw = {
-	                contour2d: axes.length == 3,
-	                contour3d: axes.length == 4,
-	                isosurface: axes.length === 4,
-	                pbr: axes.length === 4
-	              };
+	              data.draw = {};
+	              if (axes.indexOf('time') >= 0) {
+	                if (axes.indexOf('depth') >= 0) {
+	                  data.draw.contour3DT = true;
+	                  data.draw.isosurface3DT = true;
+	                } else {
+	                  data.draw.contour2DT = true;
+	                }
+	              } else {
+	                if (axes.indexOf('depth') >= 0) {
+	                  data.draw.contour3D = true;
+	                  data.draw.isosurface3D = true;
+	                } else {
+	                  data.draw.contour2D = true;
+	                }
+	              }
 	              data.x = dataset[data.array.dimensions[axes.length - 1]];
 	              data.y = dataset[data.array.dimensions[axes.length - 2]];
 	              data.z = dataset[data.array.dimensions[axes.length - 3]];
@@ -86882,55 +86899,69 @@
 	      });
 	    }
 	  }, {
-	    key: 'draw',
-	    value: function draw(data) {
-	      var url = queryUrl(data);
-	      console.log(url, data);
-	      this.requestData(url).then(function (data) {
-	        console.log(data);
-	      });
-	    }
-	  }, {
 	    key: 'drawContour2D',
 	    value: function drawContour2D(data) {
 	      var _this2 = this;
 
-	      var url = queryUrl(data);
-	      this.requestData(url).then(function (volume) {
-	        var geometry = new _this2.ContourGeometry(volume[0][0][0], {
+	      this.drawContour(data, function (volume) {
+	        return new _this2.ContourGeometry(volume[0][0], {
+	          x: volume[0][2],
+	          y: volume[0][1],
+	          z: -0.5
+	        }, _ignoreValue(data));
+	      });
+	    }
+	  }, {
+	    key: 'drawContour2DT',
+	    value: function drawContour2DT(data) {
+	      var _this3 = this;
+
+	      this.drawContour(data, function (volume) {
+	        return new _this3.ContourGeometry(volume[0][0][0], {
 	          x: volume[0][3],
 	          y: volume[0][2],
 	          z: -0.5
-	        }, ignoreValue(data));
-	        var material = new _three2.default.MeshBasicMaterial({
-	          vertexColors: _three2.default.VertexColors,
-	          side: _three2.default.DoubleSide
-	        });
-	        var mesh = new _three2.default.Mesh(geometry, material);
-	        _this2.scene.add(mesh);
-	        _this2.objects.push({
-	          name: url,
-	          mesh: mesh,
-	          show: true
-	        });
+	        }, _ignoreValue(data));
 	      });
 	    }
 	  }, {
 	    key: 'drawContour3D',
 	    value: function drawContour3D(data) {
-	      var _this3 = this;
+	      var _this4 = this;
+
+	      this.drawContour(data, function (volume) {
+	        return new _this4.ContourGeometry(volume[0][0][0], {
+	          x: volume[0][3],
+	          y: volume[0][2],
+	          z: depthConverter(data.z)(volume[0][1][0])
+	        }, _ignoreValue(data));
+	      });
+	    }
+	  }, {
+	    key: 'drawContour3DT',
+	    value: function drawContour3DT(data) {
+	      var _this5 = this;
+
+	      this.drawContour(data, function (volume) {
+	        return new _this5.ContourGeometry(volume[0][0][0][0], {
+	          x: volume[0][4],
+	          y: volume[0][3],
+	          z: depthConverter(data.z)(volume[0][2][0])
+	        }, _ignoreValue(data));
+	      });
+	    }
+	  }, {
+	    key: 'drawContour',
+	    value: function drawContour(data, f) {
+	      var _this6 = this;
 
 	      var url = queryUrl(data);
 	      this.$modal.open({
 	        controller: 'OpacityDialogController as opacityCtl',
 	        templateUrl: 'partials/dialogs/opacity.html'
 	      }).result.then(function (result) {
-	        _this3.requestData(url).then(function (volume) {
-	          var geometry = new _this3.ContourGeometry(volume[0][0][0][0], {
-	            x: volume[0][4],
-	            y: volume[0][3],
-	            z: depthConverter(data.z)(volume[0][2][0])
-	          }, ignoreValue(data));
+	        _this6.requestData(url).then(function (volume) {
+	          var geometry = f(volume);
 	          var material = new _three2.default.MeshBasicMaterial({
 	            opacity: result.opacity,
 	            side: _three2.default.DoubleSide,
@@ -86938,8 +86969,8 @@
 	            vertexColors: _three2.default.VertexColors
 	          });
 	          var mesh = new _three2.default.Mesh(geometry, material);
-	          _this3.scene.add(mesh);
-	          _this3.objects.push({
+	          _this6.scene.add(mesh);
+	          _this6.objects.push({
 	            name: url,
 	            mesh: mesh,
 	            show: true
@@ -86948,57 +86979,98 @@
 	      });
 	    }
 	  }, {
+	    key: 'drawIsosurface3D',
+	    value: function drawIsosurface3D(data) {
+	      var _this7 = this;
+
+	      this.drawIsosurface(data, function (volume, isovalue) {
+	        return new _this7.IsosurfaceGeometry(volume[0][0], {
+	          x: volume[0][3],
+	          y: volume[0][2],
+	          z: volume[0][1].map(depthConverter(data.z))
+	        }, isovalue);
+	      });
+	    }
+	  }, {
+	    key: 'drawIsosurface3DT',
+	    value: function drawIsosurface3DT(data) {
+	      var _this8 = this;
+
+	      this.drawIsosurface(data, function (volume, isovalue) {
+	        return new _this8.IsosurfaceGeometry(volume[0][0][0], {
+	          x: volume[0][4],
+	          y: volume[0][3],
+	          z: volume[0][2].map(depthConverter(data.z))
+	        }, isovalue);
+	      });
+	    }
+	  }, {
 	    key: 'drawIsosurface',
-	    value: function drawIsosurface(data) {
-	      var _this4 = this;
+	    value: function drawIsosurface(data, f) {
+	      var _this9 = this;
 
 	      var url = queryUrl(data);
-	      this.$modal.open({
-	        controller: 'IsovalueDialogController as isovalueCtl',
-	        templateUrl: 'partials/dialogs/isovalue.html'
-	      }).result.then(function (result) {
-	        _this4.requestData(url).then(function (volume) {
-	          var geometry = new _this4.IsosurfaceGeometry(volume[0][0][0], {
-	            x: volume[0][4],
-	            y: volume[0][3],
-	            z: volume[0][2].map(depthConverter(data.z))
-	          }, result.isovalue);
-	          geometry.computeFaceNormals();
-	          geometry.computeVertexNormals();
-	          var material = new _three2.default.MeshLambertMaterial({
-	            color: new _three2.default.Color(result.color),
-	            side: _three2.default.DoubleSide
-	          });
-	          var mesh = new _three2.default.Mesh(geometry, material);
-	          _this4.scene.add(mesh);
-	          _this4.objects.push({
-	            name: url,
-	            mesh: mesh,
-	            show: true
-	          });
+	      this.requestData(url).then(function (_volume) {
+	        return _this9.$modal.open({
+	          controller: 'IsovalueDialogController as isovalueCtl',
+	          templateUrl: 'partials/dialogs/isovalue.html',
+	          resolve: {
+	            volume: function volume() {
+	              return _volume;
+	            },
+	            ignoreValue: function ignoreValue() {
+	              return _ignoreValue(data);
+	            }
+	          }
+	        }).result;
+	      }).then(function (result) {
+	        var geometry = f(result.volume, result.isovalue);
+	        geometry.computeFaceNormals();
+	        geometry.computeVertexNormals();
+	        var material = new _three2.default.MeshLambertMaterial({
+	          color: new _three2.default.Color(result.color),
+	          side: _three2.default.DoubleSide
+	        });
+	        var mesh = new _three2.default.Mesh(geometry, material);
+	        _this9.scene.add(mesh);
+	        _this9.objects.push({
+	          name: url,
+	          mesh: mesh,
+	          show: true
 	        });
 	      });
 	    }
 	  }, {
 	    key: 'inputQuery',
 	    value: function inputQuery(data, index) {
-	      var _this5 = this;
+	      var _this10 = this;
 
-	      this.$modal.open({
-	        controller: 'QueryDialogController as queryCtl',
-	        resolve: {
-	          values: function values($q) {
-	            var deferred = $q.defer();
-	            _this5.requestData(axisUrl(data, index)).then(function (data) {
-	              deferred.resolve(data[0]);
-	            });
-	            return deferred.promise;
-	          }
-	        },
-	        templateUrl: 'partials/dialogs/query.html'
-	      }).result.then(function (result) {
-	        data.query[index] = result.from + ':' + result.step + ':' + result.to;
-	      });
+	      var resolve = {
+	        values: function values($q) {
+	          var deferred = $q.defer();
+	          _this10.requestData(axisUrl(data, index)).then(function (data) {
+	            deferred.resolve(data[0]);
+	          });
+	          return deferred.promise;
+	        }
+	      };
+	      if (data.array.dimensions[index].toLowerCase() === 'time') {
+	        this.$modal.open({
+	          controller: 'QuerySelectDialogController as queryCtl',
+	          templateUrl: 'partials/dialogs/query-select.html',
+	          resolve: resolve
+	        }).result.then(function (result) {
+	          data.query[index] = result.index;
+	        });
+	      } else {
+	        this.$modal.open({
+	          controller: 'QueryDialogController as queryCtl',
+	          templateUrl: 'partials/dialogs/query.html',
+	          resolve: resolve
+	        }).result.then(function (result) {
+	          data.query[index] = result.from + ':' + result.step + ':' + result.to;
+	        });
+	      }
 	    }
 	  }, {
 	    key: 'requestData',
@@ -87030,7 +87102,7 @@
 	    _classCallCheck(this, _class2);
 
 	    this.$modalInstance = $uibModalInstance;
-	    this.opacity = 1;
+	    this.opacity = 0.5;
 	  }
 
 	  _createClass(_class2, [{
@@ -87049,12 +87121,13 @@
 
 	  return _class2;
 	}()).controller('IsovalueDialogController', function () {
-	  function _class3($uibModalInstance) {
+	  function _class3($uibModalInstance, volume, ignoreValue) {
 	    _classCallCheck(this, _class3);
 
 	    this.$modalInstance = $uibModalInstance;
-	    this.isovalue = 34;
+	    this.isovalue = volumeAverage(volume, ignoreValue);
 	    this.color = '#ff0000';
+	    this.volume = volume;
 	  }
 
 	  _createClass(_class3, [{
@@ -87062,7 +87135,8 @@
 	    value: function ok() {
 	      this.$modalInstance.close({
 	        isovalue: +this.isovalue,
-	        color: this.color
+	        color: this.color,
+	        volume: this.volume
 	      });
 	    }
 	  }, {
@@ -87101,6 +87175,30 @@
 	  }]);
 
 	  return _class4;
+	}()).controller('QuerySelectDialogController', function () {
+	  function _class5($uibModalInstance, values) {
+	    _classCallCheck(this, _class5);
+
+	    this.$modalInstance = $uibModalInstance;
+	    this.values = values;
+	    this.index = values[0];
+	  }
+
+	  _createClass(_class5, [{
+	    key: 'ok',
+	    value: function ok() {
+	      this.$modalInstance.close({
+	        index: this.values.indexOf(this.index)
+	      });
+	    }
+	  }, {
+	    key: 'cancel',
+	    value: function cancel() {
+	      this.$modalInstance.dismiss('cancel');
+	    }
+	  }]);
+
+	  return _class5;
 	}()).directive('datasetControl', function () {
 	  return {
 	    controller: 'DatasetController as datasetCtl',
