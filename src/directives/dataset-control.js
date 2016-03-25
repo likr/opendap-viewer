@@ -144,41 +144,41 @@ angular.module(modName, [])
 
     drawContour2D(data) {
       this.drawContour(data, (volume) => {
-        return new this.ContourGeometry(volume[0][0], {
+        return new this.ContourGeometry(volume[0], {
           x: volume[0][2],
           y: volume[0][1],
-          z: 1,
+          z: [1],
         }, ignoreValue(data));
       });
     }
 
     drawContour2DT(data) {
       this.drawContour(data, (volume) => {
-        return new this.ContourGeometry(volume[0][0][0], {
+        return new this.ContourGeometry(volume[0][0], {
           x: volume[0][3],
           y: volume[0][2],
-          z: 1,
+          z: [1],
         }, ignoreValue(data));
       });
     }
 
-    drawContour3D(data) {
+    drawContour3D(data, dimension) {
       this.drawContour(data, (volume) => {
-        return new this.ContourGeometry(volume[0][0][0], {
+        return new this.ContourGeometry(volume[0][0], {
           x: volume[0][3],
           y: volume[0][2],
-          z: depthConverter(data.z)(volume[0][1][0]),
-        }, ignoreValue(data));
+          z: volume[0][1].map(depthConverter(data.z)),
+        }, ignoreValue(data), dimension);
       });
     }
 
-    drawContour3DT(data) {
+    drawContour3DT(data, dimension) {
       this.drawContour(data, (volume) => {
-        return new this.ContourGeometry(volume[0][0][0][0], {
+        return new this.ContourGeometry(volume[0][0][0], {
           x: volume[0][4],
           y: volume[0][3],
-          z: depthConverter(data.z)(volume[0][2][0]),
-        }, ignoreValue(data));
+          z: volume[0][2].map(depthConverter(data.z)),
+        }, ignoreValue(data), dimension);
       });
     }
 
