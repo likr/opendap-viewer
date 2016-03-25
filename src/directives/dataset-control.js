@@ -253,6 +253,8 @@ angular.module(modName, [])
           var material = new THREE.MeshLambertMaterial({
             color: new THREE.Color(result.color),
             side: THREE.DoubleSide,
+            opacity: result.opacity,
+            transparent: true,
           });
           var mesh = new THREE.Mesh(geometry, material);
           this.scene.add(mesh);
@@ -341,6 +343,7 @@ angular.module(modName, [])
       this.$modalInstance = $uibModalInstance;
       this.isovalue = volumeAverage(volume, ignoreValue);
       this.color = '#ff0000';
+      this.opacity = 0.5;
       this.volume = volume;
     }
 
@@ -348,6 +351,7 @@ angular.module(modName, [])
       this.$modalInstance.close({
         isovalue: +this.isovalue,
         color: this.color,
+        opacity: this.opacity,
         volume: this.volume,
       });
     }
