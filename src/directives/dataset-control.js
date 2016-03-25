@@ -147,7 +147,7 @@ angular.module(modName, [])
         return new this.ContourGeometry(volume[0][0], {
           x: volume[0][2],
           y: volume[0][1],
-          z: -0.5,
+          z: 1,
         }, ignoreValue(data));
       });
     }
@@ -157,7 +157,7 @@ angular.module(modName, [])
         return new this.ContourGeometry(volume[0][0][0], {
           x: volume[0][3],
           y: volume[0][2],
-          z: -0.5,
+          z: 1,
         }, ignoreValue(data));
       });
     }
