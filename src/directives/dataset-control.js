@@ -1,7 +1,13 @@
 import angular from 'angular'
 import THREE from 'three'
 
-const modName = 'opendap-viewer.directives.dataset-control';
+const is3D = (axes) => {
+  return axes.length === (isTimeVarying(axes) ? 4 : 3);
+};
+
+const isTimeVarying = (axes) => {
+  return axes.indexOf('time') >= 0;
+};
 
 const volumeAverage = (volume, ignoreValue) => {
   const nx = volume[0].length === 5 ? volume[0][4].length : volume[0][3].length;
@@ -22,6 +28,22 @@ const volumeAverage = (volume, ignoreValue) => {
     }
   }
   return val / count;
+};
+
+const hasKey = (data, key) => {
+  if (data.attributes.standard_name && data.attributes.standard_name.toLowerCase().startsWith(key)) {
+    return true;
+  }
+  if (data.attributes.long_name && data.attributes.long_name.toLowerCase().startsWith(key)) {
+    return true;
+  }
+  return false;
+};
+
+const depthConverter = (data) => {
+  const sign = hasKey(data, 'depth') ? -1 : 1;
+  const scale = hasKey(data, 'air_pressure') ? 1 / 6000 : 1 / 60;
+  return (z) => sign * scale * z;
 };
 
 function parseUrl(url) {
@@ -62,26 +84,7 @@ function ignoreValue(data) {
   }
 }
 
-
-function depthConverter(data) {
-  var sign = 1;
-  var keys = ['depth'];
-
-  for (const key of keys) {
-    if (data.attributes.standard_name && data.attributes.standard_name.toLowerCase().startsWith(key)) {
-      sign = -1;
-      break;
-    }
-    if (data.attributes.long_name && data.attributes.long_name.toLowerCase().startsWith(key)) {
-      sign = -1;
-      break;
-    }
-  }
-  return function(z) {
-    return sign * z / 60;
-  };
-}
-
+const modName = 'opendap-viewer.directives.dataset-control';
 
 angular.module(modName, [])
   .controller('DatasetController', class {
@@ -115,15 +118,15 @@ angular.module(modName, [])
                 });
                 axes = data.array.dimensions;
                 data.draw = {};
-                if (axes.indexOf('time') >= 0) {
-                  if (axes.indexOf('depth') >= 0) {
+                if (isTimeVarying(axes)) {
+                  if (is3D(axes)) {
                     data.draw.contour3DT = true;
                     data.draw.isosurface3DT = true;
                   } else {
                     data.draw.contour2DT = true;
                   }
                 } else {
-                  if (axes.indexOf('depth') >= 0) {
+                  if (is3D(axes)) {
                     data.draw.contour3D = true;
                     data.draw.isosurface3D = true;
                   } else {
