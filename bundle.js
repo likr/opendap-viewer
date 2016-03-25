@@ -75265,73 +75265,156 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	var extent3D = function extent3D(volume, ignoreValue) {
+	  var nx = volume[0][0].length;
+	  var ny = volume[0].length;
+	  var nz = volume.length;
+
+	  var min = Infinity;
+	  var max = -Infinity;
+
+	  for (var iz = 0; iz < nz; ++iz) {
+	    for (var iy = 0; iy < ny; ++iy) {
+	      for (var ix = 0; ix < nx; ++ix) {
+	        var value = volume[iz][iy][ix];
+	        if (value !== ignoreValue) {
+	          min = Math.min(min, value);
+	          max = Math.max(max, value);
+	        }
+	      }
+	    }
+	  }
+
+	  return [min, max];
+	};
+
 	var modName = 'opendap-viewer.services.contour-geometry';
 
 	_angular2.default.module(modName, []).factory('ContourGeometry', function () {
 	  return function (_THREE$Geometry) {
 	    _inherits(_class, _THREE$Geometry);
 
-	    function _class(plane, coordinates, ignoreValue) {
+	    function _class(volume, coordinates, ignoreValue) {
+	      var dimension = arguments.length <= 3 || arguments[3] === undefined ? 'xy' : arguments[3];
+
 	      _classCallCheck(this, _class);
 
 	      var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(_class).call(this));
 
-	      var nx = coordinates.x.length;
-	      var ny = coordinates.y.length;
-
-	      var extents = plane.map(function (row) {
-	        return _d2.default.extent(row.filter(function (v) {
-	          return v !== ignoreValue;
-	        }));
-	      });
-	      var min = _d2.default.min(extents, function (d) {
-	        return d[0];
-	      });
-	      var max = _d2.default.max(extents, function (d) {
-	        return d[1];
-	      });
-	      var scale = _d2.default.scale.linear().domain([min, max]).range([240, 0]);
-	      var lonScale = function lonScale(x) {
-	        return x > 180 ? x - 360 : x;
-	      };
-
-	      var vertexIndex = 0;
-	      for (var iy = 0; iy < ny - 1; ++iy) {
-	        var y0 = coordinates.y[iy];
-	        var y1 = coordinates.y[iy + 1];
-	        for (var ix = 0; ix < nx - 1; ++ix) {
-	          var x0 = lonScale(coordinates.x[ix]);
-	          var x1 = lonScale(coordinates.x[ix + 1]);
-	          if (x0 > x1) {
-	            continue;
-	          }
-	          _this.vertices.push(new _three2.default.Vector3(x0, y0, coordinates.z));
-	          _this.vertices.push(new _three2.default.Vector3(x1, y0, coordinates.z));
-	          _this.vertices.push(new _three2.default.Vector3(x1, y1, coordinates.z));
-	          _this.vertices.push(new _three2.default.Vector3(x0, y1, coordinates.z));
-	          var color0 = new _three2.default.Color(color(plane[iy][ix]));
-	          var color1 = new _three2.default.Color(color(plane[iy][ix + 1]));
-	          var color2 = new _three2.default.Color(color(plane[iy + 1][ix + 1]));
-	          var color3 = new _three2.default.Color(color(plane[iy + 1][ix]));
-	          var face1 = new _three2.default.Face3(vertexIndex, vertexIndex + 1, vertexIndex + 2);
-	          face1.vertexColors[0] = color0;
-	          face1.vertexColors[1] = color1;
-	          face1.vertexColors[2] = color2;
-	          _this.faces.push(face1);
-	          var face2 = new _three2.default.Face3(vertexIndex, vertexIndex + 2, vertexIndex + 3);
-	          face2.vertexColors[0] = color0;
-	          face2.vertexColors[1] = color2;
-	          face2.vertexColors[2] = color3;
-	          _this.faces.push(face2);
-	          vertexIndex += 4;
-	        }
-	      }
-
-	      function color(s) {
+	      var scale = _d2.default.scale.linear().domain(extent3D(volume, ignoreValue)).range([240, 0]);
+	      var color = function color(s) {
 	        if (s === ignoreValue || isNaN(s)) {
 	          return _d2.default.hsl(0, 1, 1).toString();
 	        }
 	        return _d2.default.hsl(scale(s), 1, 0.5).toString();
+	      };
+	      var lonScale = function lonScale(x) {
+	        return x > 180 ? x - 360 : x;
+	      };
+
+	      var nx = coordinates.x.length;
+	      var ny = coordinates.y.length;
+	      var nz = coordinates.z.length;
+	      var vertexIndex = 0;
+	      if (dimension === 'xz') {
+	        for (var iy = 0; iy < ny; ++iy) {
+	          var y = coordinates.y[iy];
+	          for (var iz = 0; iz < nz - 1; ++iz) {
+	            var z0 = coordinates.z[iz];
+	            var z1 = coordinates.z[iz + 1];
+	            for (var ix = 0; ix < nx - 1; ++ix) {
+	              var x0 = lonScale(coordinates.x[ix]);
+	              var x1 = lonScale(coordinates.x[ix + 1]);
+	              if (x0 > x1) {
+	                continue;
+	              }
+	              _this.vertices.push(new _three2.default.Vector3(x0, y, z0));
+	              _this.vertices.push(new _three2.default.Vector3(x1, y, z0));
+	              _this.vertices.push(new _three2.default.Vector3(x1, y, z1));
+	              _this.vertices.push(new _three2.default.Vector3(x0, y, z1));
+	              var color0 = new _three2.default.Color(color(volume[iz][iy][ix]));
+	              var color1 = new _three2.default.Color(color(volume[iz][iy][ix + 1]));
+	              var color2 = new _three2.default.Color(color(volume[iz + 1][iy][ix + 1]));
+	              var color3 = new _three2.default.Color(color(volume[iz + 1][iy][ix]));
+	              var face1 = new _three2.default.Face3(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+	              face1.vertexColors[0] = color0;
+	              face1.vertexColors[1] = color1;
+	              face1.vertexColors[2] = color2;
+	              _this.faces.push(face1);
+	              var face2 = new _three2.default.Face3(vertexIndex, vertexIndex + 2, vertexIndex + 3);
+	              face2.vertexColors[0] = color0;
+	              face2.vertexColors[1] = color2;
+	              face2.vertexColors[2] = color3;
+	              _this.faces.push(face2);
+	              vertexIndex += 4;
+	            }
+	          }
+	        }
+	      } else if (dimension === 'yz') {
+	        for (var _ix = 0; _ix < nx; ++_ix) {
+	          var x = lonScale(coordinates.x[_ix]);
+	          for (var _iz = 0; _iz < nz - 1; ++_iz) {
+	            var _z = coordinates.z[_iz];
+	            var _z2 = coordinates.z[_iz + 1];
+	            for (var _iy = 0; _iy < ny - 1; ++_iy) {
+	              var y0 = coordinates.y[_iy];
+	              var y1 = coordinates.y[_iy + 1];
+	              _this.vertices.push(new _three2.default.Vector3(x, y0, _z));
+	              _this.vertices.push(new _three2.default.Vector3(x, y1, _z));
+	              _this.vertices.push(new _three2.default.Vector3(x, y1, _z2));
+	              _this.vertices.push(new _three2.default.Vector3(x, y0, _z2));
+	              var _color = new _three2.default.Color(color(volume[_iz][_iy][_ix]));
+	              var _color2 = new _three2.default.Color(color(volume[_iz][_iy + 1][_ix]));
+	              var _color3 = new _three2.default.Color(color(volume[_iz + 1][_iy + 1][_ix]));
+	              var _color4 = new _three2.default.Color(color(volume[_iz + 1][_iy][_ix]));
+	              var _face = new _three2.default.Face3(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+	              _face.vertexColors[0] = _color;
+	              _face.vertexColors[1] = _color2;
+	              _face.vertexColors[2] = _color3;
+	              _this.faces.push(_face);
+	              var _face2 = new _three2.default.Face3(vertexIndex, vertexIndex + 2, vertexIndex + 3);
+	              _face2.vertexColors[0] = _color;
+	              _face2.vertexColors[1] = _color3;
+	              _face2.vertexColors[2] = _color4;
+	              _this.faces.push(_face2);
+	              vertexIndex += 4;
+	            }
+	          }
+	        }
+	      } else {
+	        for (var _iz2 = 0; _iz2 < nz; ++_iz2) {
+	          var z = coordinates.z[_iz2];
+	          for (var _iy2 = 0; _iy2 < ny - 1; ++_iy2) {
+	            var _y = coordinates.y[_iy2];
+	            var _y2 = coordinates.y[_iy2 + 1];
+	            for (var _ix2 = 0; _ix2 < nx - 1; ++_ix2) {
+	              var _x2 = lonScale(coordinates.x[_ix2]);
+	              var _x3 = lonScale(coordinates.x[_ix2 + 1]);
+	              if (_x2 > _x3) {
+	                continue;
+	              }
+	              _this.vertices.push(new _three2.default.Vector3(_x2, _y, z));
+	              _this.vertices.push(new _three2.default.Vector3(_x3, _y, z));
+	              _this.vertices.push(new _three2.default.Vector3(_x3, _y2, z));
+	              _this.vertices.push(new _three2.default.Vector3(_x2, _y2, z));
+	              var _color5 = new _three2.default.Color(color(volume[_iz2][_iy2][_ix2]));
+	              var _color6 = new _three2.default.Color(color(volume[_iz2][_iy2][_ix2 + 1]));
+	              var _color7 = new _three2.default.Color(color(volume[_iz2][_iy2 + 1][_ix2 + 1]));
+	              var _color8 = new _three2.default.Color(color(volume[_iz2][_iy2 + 1][_ix2]));
+	              var _face3 = new _three2.default.Face3(vertexIndex, vertexIndex + 1, vertexIndex + 2);
+	              _face3.vertexColors[0] = _color5;
+	              _face3.vertexColors[1] = _color6;
+	              _face3.vertexColors[2] = _color7;
+	              _this.faces.push(_face3);
+	              var _face4 = new _three2.default.Face3(vertexIndex, vertexIndex + 2, vertexIndex + 3);
+	              _face4.vertexColors[0] = _color5;
+	              _face4.vertexColors[1] = _color7;
+	              _face4.vertexColors[2] = _color8;
+	              _this.faces.push(_face4);
+	              vertexIndex += 4;
+	            }
+	          }
+	        }
 	      }
 	      return _this;
 	    }
@@ -86715,7 +86798,13 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var modName = 'opendap-viewer.directives.dataset-control';
+	var is3D = function is3D(axes) {
+	  return axes.length === (isTimeVarying(axes) ? 4 : 3);
+	};
+
+	var isTimeVarying = function isTimeVarying(axes) {
+	  return axes.indexOf('time') >= 0;
+	};
 
 	var volumeAverage = function volumeAverage(volume, ignoreValue) {
 	  var nx = volume[0].length === 5 ? volume[0][4].length : volume[0][3].length;
@@ -86736,6 +86825,24 @@
 	    }
 	  }
 	  return val / count;
+	};
+
+	var hasKey = function hasKey(data, key) {
+	  if (data.attributes.standard_name && data.attributes.standard_name.toLowerCase().startsWith(key)) {
+	    return true;
+	  }
+	  if (data.attributes.long_name && data.attributes.long_name.toLowerCase().startsWith(key)) {
+	    return true;
+	  }
+	  return false;
+	};
+
+	var depthConverter = function depthConverter(data) {
+	  var sign = hasKey(data, 'depth') ? -1 : 1;
+	  var scale = hasKey(data, 'air_pressure') ? 1 / 6000 : 1 / 60;
+	  return function (z) {
+	    return sign * scale * z;
+	  };
 	};
 
 	function parseUrl(url) {
@@ -86798,46 +86905,7 @@
 	  }
 	}
 
-	function depthConverter(data) {
-	  var sign = 1;
-	  var keys = ['depth'];
-
-	  var _iteratorNormalCompletion2 = true;
-	  var _didIteratorError2 = false;
-	  var _iteratorError2 = undefined;
-
-	  try {
-	    for (var _iterator2 = keys[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	      var key = _step2.value;
-
-	      if (data.attributes.standard_name && data.attributes.standard_name.toLowerCase().startsWith(key)) {
-	        sign = -1;
-	        break;
-	      }
-	      if (data.attributes.long_name && data.attributes.long_name.toLowerCase().startsWith(key)) {
-	        sign = -1;
-	        break;
-	      }
-	    }
-	  } catch (err) {
-	    _didIteratorError2 = true;
-	    _iteratorError2 = err;
-	  } finally {
-	    try {
-	      if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	        _iterator2.return();
-	      }
-	    } finally {
-	      if (_didIteratorError2) {
-	        throw _iteratorError2;
-	      }
-	    }
-	  }
-
-	  return function (z) {
-	    return sign * z / 60;
-	  };
-	}
+	var modName = 'opendap-viewer.directives.dataset-control';
 
 	_angular2.default.module(modName, []).controller('DatasetController', function () {
 	  function _class($uibModal, jqdap, scene, objects, ContourGeometry, IsosurfaceGeometry) {
@@ -86875,15 +86943,15 @@
 	              });
 	              axes = data.array.dimensions;
 	              data.draw = {};
-	              if (axes.indexOf('time') >= 0) {
-	                if (axes.indexOf('depth') >= 0) {
+	              if (isTimeVarying(axes)) {
+	                if (is3D(axes)) {
 	                  data.draw.contour3DT = true;
 	                  data.draw.isosurface3DT = true;
 	                } else {
 	                  data.draw.contour2DT = true;
 	                }
 	              } else {
-	                if (axes.indexOf('depth') >= 0) {
+	                if (is3D(axes)) {
 	                  data.draw.contour3D = true;
 	                  data.draw.isosurface3D = true;
 	                } else {
@@ -86904,10 +86972,10 @@
 	      var _this2 = this;
 
 	      this.drawContour(data, function (volume) {
-	        return new _this2.ContourGeometry(volume[0][0], {
+	        return new _this2.ContourGeometry(volume[0], {
 	          x: volume[0][2],
 	          y: volume[0][1],
-	          z: -0.5
+	          z: [1]
 	        }, _ignoreValue(data));
 	      });
 	    }
@@ -86917,37 +86985,37 @@
 	      var _this3 = this;
 
 	      this.drawContour(data, function (volume) {
-	        return new _this3.ContourGeometry(volume[0][0][0], {
+	        return new _this3.ContourGeometry(volume[0][0], {
 	          x: volume[0][3],
 	          y: volume[0][2],
-	          z: -0.5
+	          z: [1]
 	        }, _ignoreValue(data));
 	      });
 	    }
 	  }, {
 	    key: 'drawContour3D',
-	    value: function drawContour3D(data) {
+	    value: function drawContour3D(data, dimension) {
 	      var _this4 = this;
 
 	      this.drawContour(data, function (volume) {
-	        return new _this4.ContourGeometry(volume[0][0][0], {
+	        return new _this4.ContourGeometry(volume[0][0], {
 	          x: volume[0][3],
 	          y: volume[0][2],
-	          z: depthConverter(data.z)(volume[0][1][0])
-	        }, _ignoreValue(data));
+	          z: volume[0][1].map(depthConverter(data.z))
+	        }, _ignoreValue(data), dimension);
 	      });
 	    }
 	  }, {
 	    key: 'drawContour3DT',
-	    value: function drawContour3DT(data) {
+	    value: function drawContour3DT(data, dimension) {
 	      var _this5 = this;
 
 	      this.drawContour(data, function (volume) {
-	        return new _this5.ContourGeometry(volume[0][0][0][0], {
+	        return new _this5.ContourGeometry(volume[0][0][0], {
 	          x: volume[0][4],
 	          y: volume[0][3],
-	          z: depthConverter(data.z)(volume[0][2][0])
-	        }, _ignoreValue(data));
+	          z: volume[0][2].map(depthConverter(data.z))
+	        }, _ignoreValue(data), dimension);
 	      });
 	    }
 	  }, {
@@ -87029,7 +87097,9 @@
 	        geometry.computeVertexNormals();
 	        var material = new _three2.default.MeshLambertMaterial({
 	          color: new _three2.default.Color(result.color),
-	          side: _three2.default.DoubleSide
+	          side: _three2.default.DoubleSide,
+	          opacity: result.opacity,
+	          transparent: true
 	        });
 	        var mesh = new _three2.default.Mesh(geometry, material);
 	        _this9.scene.add(mesh);
@@ -87127,6 +87197,7 @@
 	    this.$modalInstance = $uibModalInstance;
 	    this.isovalue = volumeAverage(volume, ignoreValue);
 	    this.color = '#ff0000';
+	    this.opacity = 0.5;
 	    this.volume = volume;
 	  }
 
@@ -87136,6 +87207,7 @@
 	      this.$modalInstance.close({
 	        isovalue: +this.isovalue,
 	        color: this.color,
+	        opacity: this.opacity,
 	        volume: this.volume
 	      });
 	    }
