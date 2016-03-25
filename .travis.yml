@@ -7,6 +7,7 @@ before_script:
   - npm run build
 after_success:
   - git clone https://github.com/likr/opendap-viewer.git --branch=gh-pages tmp
+  - npm run build
   - cp -R public/* tmp
   - pushd tmp
   - git add -A
